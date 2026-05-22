@@ -9,7 +9,7 @@ Built for modern music listeners who want an immersive, "Spotify Canvas"-style e
 ## ✨ Features
 
 - **Zero Configuration:** Just play a song. The extension automatically detects the playing track, fetches the lyrics via LRCLIB, and handles the sync.
-- **Universal Support:** Works seamlessly on **YouTube Music**(works best), **Spotify Web Player**, and **SoundCloud**.
+- **Universal Support:** Works seamlessly on **YouTube Music**( WORKS BEST ), **Spotify Web Player**, and **SoundCloud**.
 - **Smart Audio Sync:** Analyzes word density and genre tempo to automatically adjust the reveal timing so the text feels perfectly locked to the beat.
 - **13 Stunning Themes:** Press `T` to cycle through beautifully crafted visual themes including Aurora, Matrix, Vinyl, Cosmic, Neon, and more.
 - **Dynamic Layouts:** Lyrics automatically arrange into different visual layouts (Drift, Scatter, Cascade) to keep the screen feeling alive.
