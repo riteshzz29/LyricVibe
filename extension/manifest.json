@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "LyricVibe — Kinetic Lyrics Overlay",
+  "version": "0.3.0",
+  "description": "Overlay synced kinetic lyrics on any music tab — YouTube Music, Spotify, SoundCloud, and more.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://lrclib.net/*",
+    "https://api.lyrics.ovh/*",
+    "https://open.spotify.com/*",
+    "https://music.youtube.com/*",
+    "https://www.youtube.com/*",
+    "https://soundcloud.com/*"
+  ],
+  "action": {
+    "default_title": "Toggle LyricVibe (Ctrl+Shift+L)"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Toggle the LyricVibe lyrics overlay"
+    }
+  }
+}

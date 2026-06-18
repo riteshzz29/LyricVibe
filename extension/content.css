@@ -1,0 +1,1504 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,700;1,300&family=Syne:wght@700;800&family=Unbounded:wght@900&family=Orbitron:wght@700;900&family=Playfair+Display:wght@700;900&display=swap');
+
+/* ── THEME VARIABLES ── */
+#lvx-root {
+  --lvx-color-main:    #F2EDD7;
+  --lvx-color-accent:  #E52222;
+  --lvx-font-main:     Impact, "Arial Black", serif;
+  --lvx-font-accent:   Impact, "Arial Black", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0;
+  --lvx-glow-main:     0 0 22px rgba(255,51,71,0.28), 0 3px 0 rgba(0,0,0,0.32);
+  --lvx-glow-accent:   0 0 20px rgba(255,51,71,0.22);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.84), rgba(0,0,0,0.96)),
+                       linear-gradient(115deg, rgba(255,51,71,0.08), transparent 38%, rgba(245,240,219,0.035));
+  --lvx-bg-grid:       1;
+}
+
+/* ── HYPEBEAST: pure white, Bebas Neue, tight tracking ── */
+#lvx-root[data-lvx-theme="hype"] {
+  --lvx-color-main:    #FFFFFF;
+  --lvx-color-accent:  #FFFFFF;
+  --lvx-font-main:     "Bebas Neue", Impact, sans-serif;
+  --lvx-font-accent:   "Bebas Neue", Impact, sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.04em;
+  --lvx-glow-main:     none;
+  --lvx-glow-accent:   none;
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.92), rgba(0,0,0,0.97));
+  --lvx-bg-grid:       0;
+}
+
+/* ── SOFT: pastel, lowercase, thin DM Sans ── */
+#lvx-root[data-lvx-theme="soft"] {
+  --lvx-color-main:    #FFB4C2;
+  --lvx-color-accent:  #C9B8FF;
+  --lvx-font-main:     "DM Sans", sans-serif;
+  --lvx-font-accent:   "DM Sans", sans-serif;
+  --lvx-text-case:     none;
+  --lvx-main-tracking: -0.01em;
+  --lvx-glow-main:     0 0 30px rgba(201,184,255,0.25);
+  --lvx-glow-accent:   0 0 24px rgba(255,180,194,0.25);
+  --lvx-bg-overlay:    linear-gradient(160deg, rgba(0,0,0,0.88), rgba(10,0,20,0.95));
+  --lvx-bg-grid:       0;
+}
+
+/* ── NEON: cyan + magenta, glow ── */
+#lvx-root[data-lvx-theme="neon"] {
+  --lvx-color-main:    #00FFEA;
+  --lvx-color-accent:  #FF2D78;
+  --lvx-font-main:     "Syne", "Space Grotesk", sans-serif;
+  --lvx-font-accent:   "Syne", "Space Grotesk", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.06em;
+  --lvx-glow-main:     0 0 18px rgba(0,255,234,0.6), 0 0 40px rgba(0,255,234,0.25);
+  --lvx-glow-accent:   0 0 18px rgba(255,45,120,0.6), 0 0 40px rgba(255,45,120,0.25);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,8,0.97));
+  --lvx-bg-grid:       0;
+}
+
+/* ── CLEAN: white only, no bg, minimal ── */
+#lvx-root[data-lvx-theme="clean"] {
+  --lvx-color-main:    #FFFFFF;
+  --lvx-color-accent:  rgba(255,255,255,0.55);
+  --lvx-font-main:     "Unbounded", Impact, sans-serif;
+  --lvx-font-accent:   "Unbounded", Impact, sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: -0.02em;
+  --lvx-glow-main:     none;
+  --lvx-glow-accent:   none;
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.78), rgba(0,0,0,0.92));
+  --lvx-bg-grid:       0;
+}
+
+/* ── RETRO: gold + amber, Orbitron font ── */
+#lvx-root[data-lvx-theme="retro"] {
+  --lvx-color-main:    #FFD700;
+  --lvx-color-accent:  #FF8C00;
+  --lvx-font-main:     "Orbitron", "Syne", sans-serif;
+  --lvx-font-accent:   "Orbitron", "Syne", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.08em;
+  --lvx-glow-main:     0 0 20px rgba(255,215,0,0.5), 0 0 50px rgba(255,140,0,0.2);
+  --lvx-glow-accent:   0 0 16px rgba(255,140,0,0.5);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(10,5,0,0.92), rgba(0,0,0,0.97));
+  --lvx-bg-grid:       1;
+}
+
+/* ── GLASS: frosted glass, subtle white ── */
+#lvx-root[data-lvx-theme="glass"] {
+  --lvx-color-main:    rgba(255,255,255,0.95);
+  --lvx-color-accent:  rgba(255,255,255,0.6);
+  --lvx-font-main:     "DM Sans", sans-serif;
+  --lvx-font-accent:   "DM Sans", sans-serif;
+  --lvx-text-case:     none;
+  --lvx-main-tracking: 0.01em;
+  --lvx-glow-main:     0 2px 20px rgba(255,255,255,0.12);
+  --lvx-glow-accent:   none;
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
+  --lvx-bg-grid:       0;
+}
+
+/* ── FIRE: red + orange aggressive ── */
+#lvx-root[data-lvx-theme="fire"] {
+  --lvx-color-main:    #FF4500;
+  --lvx-color-accent:  #FF6347;
+  --lvx-font-main:     Impact, "Arial Black", sans-serif;
+  --lvx-font-accent:   Impact, "Arial Black", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.02em;
+  --lvx-glow-main:     0 0 30px rgba(255,69,0,0.6), 0 0 60px rgba(255,69,0,0.2), 0 4px 0 rgba(0,0,0,0.4);
+  --lvx-glow-accent:   0 0 24px rgba(255,99,71,0.5);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(20,0,0,0.9), rgba(0,0,0,0.97));
+  --lvx-bg-grid:       0;
+}
+
+/* ── ELEGANT: Playfair Display, serif elegance ── */
+#lvx-root[data-lvx-theme="elegant"] {
+  --lvx-color-main:    #E8D5B7;
+  --lvx-color-accent:  #B8860B;
+  --lvx-font-main:     "Playfair Display", Georgia, serif;
+  --lvx-font-accent:   "Playfair Display", Georgia, serif;
+  --lvx-text-case:     none;
+  --lvx-main-tracking: 0.02em;
+  --lvx-glow-main:     0 2px 12px rgba(232,213,183,0.2);
+  --lvx-glow-accent:   0 2px 8px rgba(184,134,11,0.2);
+  --lvx-bg-overlay:    linear-gradient(160deg, rgba(0,0,0,0.88), rgba(15,10,5,0.96));
+  --lvx-bg-grid:       0;
+}
+
+/* ── AURORA: Northern lights, pastel green/purple ── */
+#lvx-root[data-lvx-theme="aurora"] {
+  --lvx-color-main:    #7FFFD4;
+  --lvx-color-accent:  #DA70D6;
+  --lvx-font-main:     "Syne", "DM Sans", sans-serif;
+  --lvx-font-accent:   "DM Sans", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.04em;
+  --lvx-glow-main:     0 0 24px rgba(127,255,212,0.45), 0 0 60px rgba(127,255,212,0.15);
+  --lvx-glow-accent:   0 0 20px rgba(218,112,214,0.45), 0 0 50px rgba(218,112,214,0.15);
+  --lvx-bg-overlay:    linear-gradient(160deg, rgba(0,8,12,0.92), rgba(10,0,18,0.96));
+  --lvx-bg-grid:       0;
+}
+
+/* ── MATRIX: Green terminal, digital rain ── */
+#lvx-root[data-lvx-theme="matrix"] {
+  --lvx-color-main:    #00FF41;
+  --lvx-color-accent:  #008F11;
+  --lvx-font-main:     "Orbitron", "Courier New", monospace;
+  --lvx-font-accent:   "Orbitron", "Courier New", monospace;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.08em;
+  --lvx-glow-main:     0 0 12px rgba(0,255,65,0.7), 0 0 40px rgba(0,255,65,0.25), 0 0 80px rgba(0,143,17,0.1);
+  --lvx-glow-accent:   0 0 10px rgba(0,143,17,0.6);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,4,0,0.94), rgba(0,0,0,0.98));
+  --lvx-bg-grid:       1;
+}
+
+/* ── VINYL: Warm sepia, vintage feel ── */
+#lvx-root[data-lvx-theme="vinyl"] {
+  --lvx-color-main:    #F5DEB3;
+  --lvx-color-accent:  #CD853F;
+  --lvx-font-main:     "Playfair Display", Georgia, serif;
+  --lvx-font-accent:   "Playfair Display", Georgia, serif;
+  --lvx-text-case:     none;
+  --lvx-main-tracking: 0.01em;
+  --lvx-glow-main:     0 2px 16px rgba(245,222,179,0.2), 0 4px 0 rgba(0,0,0,0.3);
+  --lvx-glow-accent:   0 2px 10px rgba(205,133,63,0.25);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(18,12,6,0.92), rgba(8,4,0,0.97));
+  --lvx-bg-grid:       0;
+}
+
+/* ── COSMIC: Deep space purples, starfield ── */
+#lvx-root[data-lvx-theme="cosmic"] {
+  --lvx-color-main:    #E0B0FF;
+  --lvx-color-accent:  #4169E1;
+  --lvx-font-main:     "Unbounded", "Syne", sans-serif;
+  --lvx-font-accent:   "Syne", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0.06em;
+  --lvx-glow-main:     0 0 20px rgba(224,176,255,0.5), 0 0 50px rgba(65,105,225,0.2);
+  --lvx-glow-accent:   0 0 18px rgba(65,105,225,0.5), 0 0 40px rgba(65,105,225,0.15);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(4,0,12,0.93), rgba(0,0,8,0.98));
+  --lvx-bg-grid:       0;
+}
+
+/* ── ROOT ── */
+#lvx-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  font-family: "Space Grotesk", "Inter", Arial, sans-serif;
+  /* ── ANTI-TILT: Complete isolation from host page CSS ── */
+  isolation: isolate;
+  contain: layout style;
+  perspective: none !important;
+  transform: none !important;
+  transform-origin: center center !important;
+  will-change: opacity;
+}
+
+/* ── Force all transforms to be FLAT / no rotation / no tilt ── */
+#lvx-root *,
+#lvx-root *::before,
+#lvx-root *::after {
+  transform-style: flat !important;
+  perspective: none !important;
+}
+
+.lvx-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--lvx-bg-overlay);
+  backdrop-filter: blur(3px) saturate(0.78);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+#lvx-root.lvx-active .lvx-stage {
+  opacity: 1;
+}
+
+/* ── Prominent "Not Available" message ── */
+.lvx-not-available {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  font-family: var(--lvx-font-main, Impact, "Arial Black", sans-serif);
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.2;
+  animation: lvx-not-avail-in 600ms ease-out both;
+}
+
+@keyframes lvx-not-avail-in {
+  from { opacity: 0; transform: scale(0.85); filter: blur(8px); }
+  to   { opacity: 1; transform: scale(1);    filter: blur(0); }
+}
+
+.lvx-stage::before,
+.lvx-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lvx-stage::before {
+  opacity: calc(0.12 * var(--lvx-bg-grid));
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.075) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 34px);
+  mix-blend-mode: screen;
+}
+
+.lvx-stage::after {
+  opacity: 0;
+  /* Smooth ambient glow instead of red flash */
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  transform: scale(0.95);
+  transition: opacity 300ms ease, transform 400ms ease;
+}
+
+.lvx-stage.lvx-hit::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── HUD (top-left info bar) ── */
+.lvx-hud {
+  position: absolute;
+  left: 24px;
+  top: 22px;
+  max-width: min(720px, calc(100vw - 48px));
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.72);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  pointer-events: auto;
+  backdrop-filter: blur(14px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.lvx-hud.lvx-dim {
+  opacity: 0.25;
+  transform: translateY(-2px) rotate(0deg);
+}
+
+.lvx-hud:hover {
+  opacity: 1;
+  transform: translateY(0) rotate(0deg);
+}
+
+.lvx-hud-label {
+  color: #21e6c1;
+  white-space: nowrap;
+}
+
+.lvx-hud-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lvx-hud.lvx-error .lvx-hud-label {
+  color: #ff3347;
+}
+
+.lvx-stop {
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+  padding: 5px 8px;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.lvx-theme-btn {
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 7px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  padding: 5px 9px;
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.lvx-theme-btn:hover {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+}
+
+/* ── Sync nudge buttons ── */
+.lvx-sync-btn {
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.6);
+  padding: 3px 7px;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+.lvx-sync-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+/* Theme-colored dot for active theme */
+#lvx-root[data-lvx-theme="hype"]    .lvx-theme-btn { color: #fff;     border-color: rgba(255,255,255,0.4); }
+#lvx-root[data-lvx-theme="soft"]    .lvx-theme-btn { color: #FFB4C2;  border-color: rgba(255,180,194,0.5); }
+#lvx-root[data-lvx-theme="neon"]    .lvx-theme-btn { color: #00FFEA;  border-color: rgba(0,255,234,0.5); }
+#lvx-root[data-lvx-theme="clean"]   .lvx-theme-btn { color: #ccc;     border-color: rgba(255,255,255,0.3); }
+#lvx-root[data-lvx-theme="retro"]   .lvx-theme-btn { color: #FFD700;  border-color: rgba(255,215,0,0.4); }
+#lvx-root[data-lvx-theme="glass"]   .lvx-theme-btn { color: #aaa;     border-color: rgba(255,255,255,0.25); }
+#lvx-root[data-lvx-theme="fire"]    .lvx-theme-btn { color: #FF4500;  border-color: rgba(255,69,0,0.5); }
+#lvx-root[data-lvx-theme="elegant"] .lvx-theme-btn { color: #E8D5B7;  border-color: rgba(232,213,183,0.4); }
+#lvx-root[data-lvx-theme="aurora"]  .lvx-theme-btn { color: #7FFFD4;  border-color: rgba(127,255,212,0.4); }
+#lvx-root[data-lvx-theme="matrix"]  .lvx-theme-btn { color: #00FF41;  border-color: rgba(0,255,65,0.5); }
+#lvx-root[data-lvx-theme="vinyl"]   .lvx-theme-btn { color: #F5DEB3;  border-color: rgba(245,222,179,0.4); }
+#lvx-root[data-lvx-theme="cosmic"]  .lvx-theme-btn { color: #E0B0FF;  border-color: rgba(224,176,255,0.4); }
+
+/* ── MOMENT CONTAINER ── */
+.lvx-moment {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 160ms ease, filter 160ms ease;
+}
+
+.lvx-moment.lvx-out {
+  opacity: 0;
+  filter: blur(2px);
+}
+
+/* ── TEXT LAYERS ── */
+.lvx-text {
+  position: absolute;
+  z-index: 2;
+  max-width: 82vw;
+  max-height: 48vh;
+  color: var(--lvx-color-main);
+  text-transform: var(--lvx-text-case);
+  letter-spacing: var(--lvx-main-tracking);
+  line-height: 0.92;
+  text-shadow: var(--lvx-glow-main);
+  /* FORCE STRAIGHT - no rotation ever */
+  transform: rotate(0deg) !important;
+}
+
+.lvx-main,
+.lvx-punch {
+  left: 50%;
+  top: 50%;
+  width: 82vw;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  font-family: var(--lvx-font-main);
+  font-weight: 900;
+  text-align: center;
+}
+
+.lvx-punch {
+  width: 88vw;
+  max-height: 55vh;
+}
+
+.lvx-support {
+  left: 12vw;
+  top: 22vh;
+  width: 54vw;
+  max-height: 28vh;
+  color: var(--lvx-color-accent);
+  font-family: var(--lvx-font-accent);
+  font-weight: 900;
+  text-align: left;
+  line-height: 1.04;
+  text-shadow: var(--lvx-glow-accent);
+}
+
+.lvx-tag {
+  right: 14vw;
+  bottom: 23vh;
+  width: 48vw;
+  max-height: 24vh;
+  color: var(--lvx-color-accent);
+  font-family: var(--lvx-font-accent);
+  font-weight: 900;
+  text-align: right;
+  line-height: 1;
+  text-shadow: var(--lvx-glow-accent);
+}
+
+/* ── Theme-specific text tweaks ── */
+#lvx-root[data-lvx-theme="soft"] .lvx-main,
+#lvx-root[data-lvx-theme="soft"] .lvx-punch {
+  font-weight: 700;
+  line-height: 1.05;
+}
+#lvx-root[data-lvx-theme="soft"] .lvx-support,
+#lvx-root[data-lvx-theme="soft"] .lvx-tag {
+  font-weight: 300;
+  font-style: italic;
+}
+
+#lvx-root[data-lvx-theme="neon"] .lvx-main,
+#lvx-root[data-lvx-theme="neon"] .lvx-punch {
+  line-height: 0.95;
+}
+
+#lvx-root[data-lvx-theme="hype"] .lvx-main,
+#lvx-root[data-lvx-theme="hype"] .lvx-punch {
+  line-height: 0.88;
+  letter-spacing: 0.05em;
+}
+
+#lvx-root[data-lvx-theme="retro"] .lvx-main,
+#lvx-root[data-lvx-theme="retro"] .lvx-punch {
+  line-height: 0.95;
+  letter-spacing: 0.1em;
+}
+
+#lvx-root[data-lvx-theme="glass"] .lvx-main,
+#lvx-root[data-lvx-theme="glass"] .lvx-punch {
+  font-weight: 700;
+  line-height: 1.0;
+}
+
+#lvx-root[data-lvx-theme="fire"] .lvx-main,
+#lvx-root[data-lvx-theme="fire"] .lvx-punch {
+  line-height: 0.88;
+}
+
+#lvx-root[data-lvx-theme="elegant"] .lvx-main,
+#lvx-root[data-lvx-theme="elegant"] .lvx-punch {
+  font-weight: 700;
+  line-height: 1.02;
+  font-style: italic;
+}
+
+/* Glass theme: extra frosted bg on stage */
+#lvx-root[data-lvx-theme="glass"] .lvx-stage {
+  backdrop-filter: blur(18px) saturate(0.6);
+}
+
+/* ── New theme text tweaks ── */
+#lvx-root[data-lvx-theme="aurora"] .lvx-main,
+#lvx-root[data-lvx-theme="aurora"] .lvx-punch {
+  line-height: 0.95;
+}
+#lvx-root[data-lvx-theme="aurora"] .lvx-support,
+#lvx-root[data-lvx-theme="aurora"] .lvx-tag {
+  font-weight: 400;
+}
+
+#lvx-root[data-lvx-theme="matrix"] .lvx-main,
+#lvx-root[data-lvx-theme="matrix"] .lvx-punch {
+  line-height: 0.95;
+  letter-spacing: 0.1em;
+}
+
+#lvx-root[data-lvx-theme="vinyl"] .lvx-main,
+#lvx-root[data-lvx-theme="vinyl"] .lvx-punch {
+  font-weight: 900;
+  line-height: 1.0;
+  font-style: italic;
+}
+#lvx-root[data-lvx-theme="vinyl"] .lvx-support,
+#lvx-root[data-lvx-theme="vinyl"] .lvx-tag {
+  font-weight: 700;
+}
+
+#lvx-root[data-lvx-theme="cosmic"] .lvx-main,
+#lvx-root[data-lvx-theme="cosmic"] .lvx-punch {
+  line-height: 0.92;
+  letter-spacing: 0.08em;
+}
+
+/* ── EXISTING LAYOUTS ── */
+.lvx-layout-left .lvx-main,
+.lvx-layout-ref-c .lvx-main {
+  left: 13vw;
+  top: 53%;
+  width: 78vw;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: left;
+}
+
+.lvx-layout-low .lvx-main {
+  top: 59%;
+  width: 76vw;
+}
+
+.lvx-layout-wide .lvx-punch {
+  width: 90vw;
+  top: 51%;
+}
+
+.lvx-layout-ref-a .lvx-support {
+  left: 12vw;
+  top: 22vh;
+  width: 62vw;
+}
+
+.lvx-layout-ref-a .lvx-main,
+.lvx-layout-ref-a .lvx-punch {
+  left: 16vw;
+  top: 47vh;
+  width: 76vw;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: left;
+}
+
+.lvx-layout-ref-a .lvx-tag {
+  right: 15vw;
+  bottom: 27vh;
+}
+
+.lvx-layout-ref-b .lvx-support {
+  left: 17vw;
+  top: 24vh;
+  width: 56vw;
+}
+
+.lvx-layout-ref-b .lvx-main,
+.lvx-layout-ref-b .lvx-punch {
+  left: 50%;
+  top: 50%;
+  width: 84vw;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  text-align: center;
+}
+
+.lvx-layout-ref-b .lvx-tag {
+  right: 17vw;
+  bottom: 24vh;
+}
+
+.lvx-layout-ref-c .lvx-support {
+  left: 16vw;
+  top: 21vh;
+  width: 50vw;
+}
+
+.lvx-layout-ref-c .lvx-tag,
+.lvx-layout-tag .lvx-tag {
+  right: 14vw;
+  bottom: 27vh;
+}
+
+/* ── DIAGONAL LAYOUTS ── */
+.lvx-layout-diag-a .lvx-support {
+  right: 9vw;
+  top: 14vh;
+  left: auto;
+  width: 52vw;
+  text-align: right;
+}
+.lvx-layout-diag-a .lvx-main,
+.lvx-layout-diag-a .lvx-punch {
+  left: 7vw;
+  bottom: 14vh;
+  top: auto;
+  transform: none !important;
+  text-align: left;
+  width: 80vw;
+}
+.lvx-layout-diag-a .lvx-tag {
+  left: 7vw;
+  right: auto;
+  bottom: 6vh;
+  text-align: left;
+  width: 50vw;
+}
+
+.lvx-layout-diag-b .lvx-support {
+  left: 8vw;
+  bottom: 18vh;
+  top: auto;
+  width: 44vw;
+  text-align: left;
+}
+.lvx-layout-diag-b .lvx-main,
+.lvx-layout-diag-b .lvx-punch {
+  right: 6vw;
+  top: 16vh;
+  left: auto;
+  transform: none !important;
+  text-align: right;
+  width: 78vw;
+}
+.lvx-layout-diag-b .lvx-tag {
+  right: 6vw;
+  bottom: 10vh;
+  width: 40vw;
+}
+
+/* ── SPLIT VERTICAL ── */
+.lvx-layout-split-v .lvx-support {
+  left: 50%;
+  top: 10vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 72vw;
+}
+.lvx-layout-split-v .lvx-main,
+.lvx-layout-split-v .lvx-punch {
+  left: 50%;
+  bottom: 12vh;
+  top: auto;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 86vw;
+}
+.lvx-layout-split-v .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 4vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 60vw;
+}
+
+/* ── ASYMMETRIC ── */
+.lvx-layout-asymm-l .lvx-support {
+  left: 6vw;
+  top: 30%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  width: 30vw;
+  text-align: left;
+}
+.lvx-layout-asymm-l .lvx-main,
+.lvx-layout-asymm-l .lvx-punch {
+  right: 5vw;
+  top: 54%;
+  left: auto;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: right;
+  width: 68vw;
+}
+
+.lvx-layout-asymm-r .lvx-support {
+  right: 6vw;
+  top: 28%;
+  left: auto;
+  transform: translateY(-50%) rotate(0deg) !important;
+  width: 32vw;
+  text-align: right;
+}
+.lvx-layout-asymm-r .lvx-main,
+.lvx-layout-asymm-r .lvx-punch {
+  left: 5vw;
+  top: 56%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: left;
+  width: 72vw;
+}
+
+/* ── CORNER LAYOUTS ── */
+.lvx-layout-corner-tl .lvx-main,
+.lvx-layout-corner-tl .lvx-punch {
+  left: 7vw;
+  top: 12vh;
+  transform: none !important;
+  text-align: left;
+  width: 82vw;
+}
+.lvx-layout-corner-tl .lvx-support {
+  left: 7vw;
+  bottom: 22vh;
+  top: auto;
+  width: 52vw;
+}
+.lvx-layout-corner-tl .lvx-tag {
+  right: 7vw;
+  bottom: 8vh;
+}
+
+.lvx-layout-corner-br .lvx-main,
+.lvx-layout-corner-br .lvx-punch {
+  right: 6vw;
+  bottom: 12vh;
+  left: auto;
+  top: auto;
+  transform: none !important;
+  text-align: right;
+  width: 84vw;
+}
+.lvx-layout-corner-br .lvx-support {
+  left: 7vw;
+  top: 14vh;
+  width: 50vw;
+}
+.lvx-layout-corner-br .lvx-tag {
+  left: 7vw;
+  right: auto;
+  bottom: 8vh;
+  text-align: left;
+  width: 40vw;
+}
+
+/* ── EDGE RIGHT ── */
+.lvx-layout-edge-r .lvx-main,
+.lvx-layout-edge-r .lvx-punch {
+  right: 6vw;
+  left: auto;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: right;
+  width: 78vw;
+}
+.lvx-layout-edge-r .lvx-support {
+  right: 6vw;
+  left: auto;
+  top: 18vh;
+  width: 48vw;
+  text-align: right;
+}
+.lvx-layout-edge-r .lvx-tag {
+  right: 6vw;
+  bottom: 12vh;
+}
+
+/* ── HIGH ── */
+.lvx-layout-high .lvx-main,
+.lvx-layout-high .lvx-punch {
+  left: 50%;
+  top: 28vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 84vw;
+}
+.lvx-layout-high .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 14vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 56vw;
+}
+
+/* ── HERO ── */
+.lvx-layout-hero .lvx-punch {
+  width: 96vw;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  text-align: center;
+  max-height: 70vh;
+}
+
+/* ══════════════════════════════════════════
+   NEW COOL LAYOUTS
+   ══════════════════════════════════════════ */
+
+/* ── CINEMA: letterbox bars, text centered between ── */
+.lvx-layout-cinema::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 12vh;
+  background: #000;
+  z-index: 1;
+  pointer-events: none;
+}
+.lvx-layout-cinema::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 12vh;
+  background: #000;
+  z-index: 1;
+  pointer-events: none;
+}
+.lvx-layout-cinema .lvx-main,
+.lvx-layout-cinema .lvx-punch {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  text-align: center;
+  width: 80vw;
+  z-index: 3;
+}
+.lvx-layout-cinema .lvx-support {
+  left: 50%;
+  top: 14vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 60vw;
+  z-index: 3;
+}
+.lvx-layout-cinema .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 14vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 50vw;
+  z-index: 3;
+}
+
+/* ── TYPEWRITER: left-aligned, bottom third ── */
+.lvx-layout-typewriter .lvx-main,
+.lvx-layout-typewriter .lvx-punch {
+  left: 8vw;
+  bottom: 18vh;
+  top: auto;
+  transform: none !important;
+  text-align: left;
+  width: 84vw;
+}
+.lvx-layout-typewriter .lvx-support {
+  left: 8vw;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  width: 50vw;
+  text-align: left;
+}
+.lvx-layout-typewriter .lvx-tag {
+  left: 8vw;
+  right: auto;
+  bottom: 8vh;
+  text-align: left;
+  width: 60vw;
+}
+
+/* ── STADIUM: huge centered, support tiny at very top ── */
+.lvx-layout-stadium .lvx-main,
+.lvx-layout-stadium .lvx-punch {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  width: 94vw;
+  text-align: center;
+  max-height: 65vh;
+}
+.lvx-layout-stadium .lvx-support {
+  left: 50%;
+  top: 6vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  width: 40vw;
+  text-align: center;
+  opacity: 0.6;
+}
+.lvx-layout-stadium .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 5vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 40vw;
+  opacity: 0.5;
+}
+
+/* ── STACK: everything vertically stacked center ── */
+.lvx-layout-stack .lvx-support {
+  left: 50%;
+  top: 18vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  width: 68vw;
+  text-align: center;
+}
+.lvx-layout-stack .lvx-main,
+.lvx-layout-stack .lvx-punch {
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  width: 82vw;
+  text-align: center;
+}
+.lvx-layout-stack .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 12vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 54vw;
+}
+
+/* ── WHISPER: small text, bottom-right, understated ── */
+.lvx-layout-whisper .lvx-main,
+.lvx-layout-whisper .lvx-punch {
+  right: 8vw;
+  bottom: 20vh;
+  left: auto;
+  top: auto;
+  transform: none !important;
+  text-align: right;
+  width: 52vw;
+  opacity: 0.85;
+}
+.lvx-layout-whisper .lvx-support {
+  right: 8vw;
+  bottom: 38vh;
+  left: auto;
+  top: auto;
+  width: 36vw;
+  text-align: right;
+  opacity: 0.55;
+}
+.lvx-layout-whisper .lvx-tag {
+  right: 8vw;
+  bottom: 10vh;
+  width: 28vw;
+  opacity: 0.4;
+}
+
+/* ── WIDESCREEN: ultra-wide strip in middle ── */
+.lvx-layout-widescreen .lvx-main,
+.lvx-layout-widescreen .lvx-punch {
+  left: 3vw;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  width: 94vw;
+  text-align: left;
+}
+.lvx-layout-widescreen .lvx-support {
+  left: 3vw;
+  top: 20vh;
+  width: 60vw;
+  text-align: left;
+}
+.lvx-layout-widescreen .lvx-tag {
+  right: 3vw;
+  bottom: 16vh;
+  width: 50vw;
+}
+
+/* ── SPOTLIGHT: dark vignette feel, centered ── */
+.lvx-layout-spotlight .lvx-main,
+.lvx-layout-spotlight .lvx-punch {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  width: 72vw;
+  text-align: center;
+}
+.lvx-layout-spotlight .lvx-support {
+  left: 50%;
+  top: 16vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  width: 48vw;
+  text-align: center;
+  opacity: 0.7;
+}
+.lvx-layout-spotlight .lvx-tag {
+  left: 50%;
+  right: auto;
+  bottom: 16vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 42vw;
+  opacity: 0.6;
+}
+
+/* ── EDGE LEFT ── */
+.lvx-layout-edge-l .lvx-main,
+.lvx-layout-edge-l .lvx-punch {
+  left: 6vw;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: left;
+  width: 78vw;
+}
+.lvx-layout-edge-l .lvx-support {
+  left: 6vw;
+  top: 18vh;
+  width: 48vw;
+  text-align: left;
+}
+.lvx-layout-edge-l .lvx-tag {
+  left: 6vw;
+  right: auto;
+  bottom: 12vh;
+  text-align: left;
+  width: 40vw;
+}
+
+/* ══════════════════════════════════════════
+   NEW LAYOUTS: DRIFT, SCATTER, CASCADE
+   ══════════════════════════════════════════ */
+
+/* ── DRIFT: text placed at dynamic off-center positions ── */
+.lvx-layout-drift .lvx-main,
+.lvx-layout-drift .lvx-punch {
+  left: 14vw;
+  top: 40%;
+  transform: translateY(-50%) rotate(0deg) !important;
+  text-align: left;
+  width: 72vw;
+}
+.lvx-layout-drift .lvx-support {
+  right: 10vw;
+  top: 14vh;
+  left: auto;
+  width: 40vw;
+  text-align: right;
+}
+.lvx-layout-drift .lvx-tag {
+  left: 14vw;
+  right: auto;
+  bottom: 10vh;
+  text-align: left;
+  width: 44vw;
+}
+
+/* ── SCATTER: support top-right, main bottom-left, tag center ── */
+.lvx-layout-scatter .lvx-support {
+  right: 6vw;
+  top: 10vh;
+  left: auto;
+  width: 38vw;
+  text-align: right;
+  opacity: 0.8;
+}
+.lvx-layout-scatter .lvx-main,
+.lvx-layout-scatter .lvx-punch {
+  left: 8vw;
+  bottom: 16vh;
+  top: auto;
+  transform: none !important;
+  text-align: left;
+  width: 80vw;
+}
+.lvx-layout-scatter .lvx-tag {
+  left: 50%;
+  right: auto;
+  top: 52%;
+  bottom: auto;
+  transform: translateX(-50%) rotate(0deg) !important;
+  text-align: center;
+  width: 36vw;
+  opacity: 0.5;
+}
+
+/* ── CASCADE: waterfall — support top, main middle, tag bottom ── */
+.lvx-layout-cascade .lvx-support {
+  left: 20vw;
+  top: 12vh;
+  width: 60vw;
+  text-align: left;
+}
+.lvx-layout-cascade .lvx-main,
+.lvx-layout-cascade .lvx-punch {
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%) rotate(0deg) !important;
+  text-align: center;
+  width: 80vw;
+}
+.lvx-layout-cascade .lvx-tag {
+  right: 20vw;
+  bottom: 10vh;
+  width: 50vw;
+}
+
+/* ══════════════════════════════════════════
+   WORD REVEAL ANIMATIONS
+   ══════════════════════════════════════════ */
+
+.lvx-word-row {
+  display: block;
+  white-space: nowrap;
+}
+
+.lvx-word {
+  display: inline-block;
+  opacity: 0;
+  /* STRAIGHT transform - no rotation, no tilt */
+  transform: translateY(16px) scale(0.88) rotate(0deg);
+  transform-origin: center center;
+  transition:
+    opacity 120ms ease-out,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 200ms ease;
+  white-space: nowrap;
+  will-change: opacity, transform;
+}
+
+.lvx-word:not(:last-child) {
+  margin-right: 0.16em;
+}
+
+.lvx-word.lvx-in {
+  opacity: 1;
+  transform: translateY(0) scale(1) rotate(0deg);
+}
+
+.lvx-main .lvx-word.lvx-in,
+.lvx-punch .lvx-word.lvx-in {
+  animation: lvx-slam 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.lvx-support .lvx-word,
+.lvx-tag .lvx-word {
+  transform: translateX(-18px) scale(0.94) rotate(0deg);
+}
+
+.lvx-support .lvx-word.lvx-in,
+.lvx-tag .lvx-word.lvx-in {
+  transform: translateX(0) scale(1) rotate(0deg);
+}
+
+/* ── SLAM animation (STRAIGHT - no tilt) ── */
+@keyframes lvx-slam {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.85) rotate(0deg);
+    filter: blur(1px);
+  }
+  65% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1.01) rotate(0deg);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+    filter: none;
+  }
+}
+
+/* ── ALTERNATIVE reveal animations (used by JS) ── */
+
+/* Fade up soft */
+@keyframes lvx-fade-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+/* Scale pop */
+@keyframes lvx-scale-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Slide in from left */
+@keyframes lvx-slide-left {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+/* Slide in from right */
+@keyframes lvx-slide-right {
+  0% {
+    opacity: 0;
+    transform: translateX(40px) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+/* Blur in */
+@keyframes lvx-blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: scale(1.1) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Glitch flash */
+@keyframes lvx-glitch {
+  0% {
+    opacity: 0;
+    transform: translate(4px, -3px) rotate(0deg);
+    filter: hue-rotate(60deg);
+  }
+  25% {
+    opacity: 0.7;
+    transform: translate(-3px, 2px) rotate(0deg);
+    filter: hue-rotate(-30deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(1px, -1px) rotate(0deg);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+    filter: none;
+  }
+}
+
+/* Apply animation classes */
+.lvx-anim-fade-up .lvx-main .lvx-word.lvx-in,
+.lvx-anim-fade-up .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-fade-up 200ms ease-out both;
+}
+.lvx-anim-scale-pop .lvx-main .lvx-word.lvx-in,
+.lvx-anim-scale-pop .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-scale-pop 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.lvx-anim-slide-left .lvx-main .lvx-word.lvx-in,
+.lvx-anim-slide-left .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-slide-left 180ms ease-out both;
+}
+.lvx-anim-slide-right .lvx-main .lvx-word.lvx-in,
+.lvx-anim-slide-right .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-slide-right 180ms ease-out both;
+}
+.lvx-anim-blur-in .lvx-main .lvx-word.lvx-in,
+.lvx-anim-blur-in .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-blur-in 250ms ease-out both;
+}
+.lvx-anim-glitch .lvx-main .lvx-word.lvx-in,
+.lvx-anim-glitch .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-glitch 180ms ease-out both;
+}
+
+/* ── NEW ANIMATIONS ── */
+
+/* Typewriter — characters snap in */
+@keyframes lvx-typewriter {
+  0% {
+    opacity: 0;
+    transform: translateX(-4px) rotate(0deg);
+    filter: brightness(2);
+  }
+  40% {
+    opacity: 1;
+    transform: translateX(1px) rotate(0deg);
+    filter: brightness(1.4);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotate(0deg);
+    filter: none;
+  }
+}
+.lvx-anim-typewriter .lvx-main .lvx-word.lvx-in,
+.lvx-anim-typewriter .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-typewriter 140ms steps(3, end) both;
+}
+
+/* Shatter — breaks through with displacement */
+@keyframes lvx-shatter {
+  0% {
+    opacity: 0;
+    transform: scale(1.6) rotate(0deg);
+    filter: blur(6px) brightness(2);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(0.95) rotate(0deg);
+    filter: blur(0) brightness(1.2);
+  }
+  50% {
+    transform: scale(1.03) rotate(0deg);
+    filter: none;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: none;
+  }
+}
+.lvx-anim-shatter .lvx-main .lvx-word.lvx-in,
+.lvx-anim-shatter .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-shatter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Wave — ripple in from below */
+@keyframes lvx-wave {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scaleY(0.6) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px) scaleY(1.05) rotate(0deg);
+  }
+  75% {
+    transform: translateY(1px) scaleY(0.98) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1) rotate(0deg);
+  }
+}
+.lvx-anim-wave .lvx-main .lvx-word.lvx-in,
+.lvx-anim-wave .lvx-punch .lvx-word.lvx-in {
+  animation: lvx-wave 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── NEXT-LINE PREVIEW (bottom center, faint) ── */
+.lvx-preview {
+  position: absolute;
+  left: 50%;
+  bottom: 4.5vh;
+  transform: translateX(-50%) rotate(0deg) !important;
+  max-width: 76vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--lvx-font-main, Impact, sans-serif);
+  font-size: clamp(13px, 1.6vw, 22px);
+  font-weight: 700;
+  text-transform: var(--lvx-text-case, uppercase);
+  letter-spacing: 0.06em;
+  color: var(--lvx-color-main, #fff);
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+}
+
+#lvx-root.lvx-active .lvx-preview {
+  opacity: 0.28;
+}
+
+/* ── SONG PROGRESS BAR (very bottom edge) ── */
+.lvx-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+
+#lvx-root.lvx-active .lvx-progress {
+  opacity: 1;
+}
+
+.lvx-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--lvx-color-accent, #E52222);
+  box-shadow: 0 0 8px var(--lvx-color-accent, #E52222);
+  transition: width 250ms linear;
+}
+
+/* ── LITE / SEE-THROUGH MODE (B key): video stays visible behind lyrics ── */
+#lvx-root.lvx-lite .lvx-stage {
+  background: linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.45)) !important;
+  backdrop-filter: none;
+}
+
+#lvx-root.lvx-lite .lvx-stage::before {
+  opacity: 0;
+}
+
+#lvx-root.lvx-lite .lvx-text {
+  text-shadow: 0 2px 14px rgba(0,0,0,0.95), 0 0 36px rgba(0,0,0,0.8), var(--lvx-glow-main);
+}
+
+#lvx-root.lvx-lite .lvx-preview {
+  text-shadow: 0 1px 10px rgba(0,0,0,1);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 760px) {
+  .lvx-hud {
+    left: 12px;
+    top: 12px;
+    max-width: calc(100vw - 24px);
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+
+  .lvx-main,
+  .lvx-punch {
+    width: 90vw;
+  }
+
+  .lvx-layout-left .lvx-main {
+    left: 6vw;
+    width: 88vw;
+  }
+
+  .lvx-layout-ref-a .lvx-main,
+  .lvx-layout-ref-a .lvx-punch,
+  .lvx-layout-ref-c .lvx-main {
+    left: 7vw;
+    width: 88vw;
+  }
+
+  .lvx-support {
+    left: 7vw;
+    top: 20vh;
+    width: 82vw;
+  }
+
+  .lvx-tag {
+    right: 7vw;
+    width: 78vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvx-word,
+  .lvx-moment,
+  .lvx-stage,
+  .lvx-stage::after,
+  .lvx-hud,
+  .lvx-preview,
+  .lvx-progress,
+  .lvx-progress-fill {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+*.err
+chrome-profile/
+chrome-profile-direct/
+extension-lite/
