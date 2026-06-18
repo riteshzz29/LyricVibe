@@ -65,7 +65,8 @@
     liteMode: false,           // see-through mode (B key)
     trackKey: '',              // cache key for per-song offset memory
     trackDurationMs: 0,        // for the progress bar
-    offsetWasRestored: false   // true if offset loaded from per-song memory
+    offsetWasRestored: false,  // true if offset loaded from per-song memory
+    errorShown: false          // true when error screen is up (observer stays active)
   };
 
   /* ══════════════════════════════════════
@@ -158,10 +159,9 @@
   /* Detect if we're on Spotify */
   state.isSpotify = location.hostname.includes('spotify.com');
 
-  /* Spotify track-change observer: auto-refresh when song changes */
-  if (state.isSpotify) {
-    setupSpotifyTrackObserver();
-  }
+  /* Universal track-change observer: auto-refresh when song changes
+     on ANY supported platform (YouTube Music, SoundCloud, Spotify, etc.) */
+  setupTrackChangeObserver();
 
   /* ══════════════════════════════════════
      MESSAGE LISTENER
@@ -180,17 +180,26 @@
     }
 
     if (message.type === 'LV_ERROR') {
-      teardown();
+      // Soft teardown: stop playback loop but KEEP overlay open and
+      // KEEP the observer active so it can auto-recover on the next track.
+      clearRevealTimers();
+      cancelLoop();
+      stopSpotifyPolling();
+      state.currentIndex = -1;
+      state.currentMoment = null;
+      state.errorShown = true; // observer stays active to catch next song
+
       show();
-      // Show big prominent "Not Available" message on the stage
       const errorMsg = message.text || 'Lyrics not available';
       stage.innerHTML = '';
       const errorDiv = document.createElement('div');
       errorDiv.className = 'lvx-not-available';
       errorDiv.textContent = errorMsg;
       stage.appendChild(errorDiv);
+      progressFill.style.width = '0%';
+      preview.textContent = '';
       root.classList.add('lvx-active');
-      setHud(errorMsg, true, true);
+      setHud(`${errorMsg}  ·  Will retry on next track`, true, true);
     }
 
     if (message.type === 'LV_TRACK') {
@@ -257,6 +266,12 @@
       hints.artist = textFrom('.playbackSoundBadge__lightLink') ||
         textFrom('.soundTitle__username');
     }
+
+    // Stable key so the service worker can tell whether the page DOM
+    // has caught up to a new track yet (prevents reading stale data).
+    const t = (hints.track || hints.pageTitle || '').trim();
+    const a = (hints.artist || '').trim();
+    hints.trackKey = t ? `${t}|||${a}` : '';
 
     return hints;
   }
@@ -544,49 +559,102 @@
   }
 
   /* ══════════════════════════════════════
-     SPOTIFY TRACK CHANGE OBSERVER — debounced, on document.body
+     UNIVERSAL TRACK CHANGE OBSERVER
+     Works on Spotify, YouTube Music, SoundCloud, plain YouTube, etc.
      ══════════════════════════════════════ */
-  function setupSpotifyTrackObserver() {
+  function setupTrackChangeObserver() {
     let lastTrackKey = '';
     let debounceTimer = 0;
+    let mediaHooked = null;
+
+    /* Build a stable key for the currently playing track from page hints. */
+    const currentTrackKey = () => {
+      const h = getPageHints();
+      const track = (h.track || h.pageTitle || '').trim();
+      const artist = (h.artist || '').trim();
+      return track ? `${track}|||${artist}` : '';
+    };
 
     const checkTrackChange = () => {
-      const track = spotifyGetTrack(document.title);
-      const artist = spotifyGetArtist(document.title);
-      const key = `${track}|||${artist}`;
+      // React while playing OR while showing the error screen
+      // (so a previously-unmatched song can recover on the next track).
+      const listening = state.active || state.errorShown;
+      if (!listening) {
+        // Keep lastTrackKey current so the first real change isn't missed
+        const k = currentTrackKey();
+        if (k) lastTrackKey = k;
+        return;
+      }
 
-      if (track && key !== lastTrackKey && state.active) {
+      const key = currentTrackKey();
+      if (!key) return;
+
+      if (key !== lastTrackKey) {
+        const prevKey = lastTrackKey;
         lastTrackKey = key;
-        // Stop current, wait for DOM to settle, then restart
-        try {
-          chrome.runtime?.sendMessage({ type: 'LV_CONTENT_STOP' }).catch(() => {});
-          setTimeout(() => {
-            try { chrome.runtime?.sendMessage({ type: 'LV_SPOTIFY_TRACK_CHANGED' }).catch(() => {}); } catch (_) {}
-          }, 500);
-        } catch (_) {}
-      } else if (track && !lastTrackKey) {
-        lastTrackKey = key;
+
+        if (state.isSpotify) {
+          // SPOTIFY: use the proven stop → delay → restart flow
+          try {
+            chrome.runtime?.sendMessage({ type: 'LV_CONTENT_STOP' }).catch(() => {});
+            setTimeout(() => {
+              try { chrome.runtime?.sendMessage({ type: 'LV_SPOTIFY_TRACK_CHANGED' }).catch(() => {}); } catch (_) {}
+            }, 500);
+          } catch (_) {}
+        } else {
+          // NON-SPOTIFY: send generic track-changed with prevKey for stale-data prevention
+          try {
+            chrome.runtime?.sendMessage({ type: 'LV_TRACK_CHANGED', prevKey: prevKey || '' }).catch(() => {});
+          } catch (_) {}
+        }
       }
     };
 
+    // Platform-aware debounce: Spotify DOM mutates heavily during transitions,
+    // so use 300ms (proven safe). Other platforms use 120ms for snappier reaction.
+    const debounceMs = state.isSpotify ? 300 : 120;
     const debouncedCheck = () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkTrackChange, 300);
+      debounceTimer = setTimeout(checkTrackChange, debounceMs);
     };
 
-    // Always observe document.body — it always exists, unlike now-playing-widget
+    /* 1) Watch the DOM — covers SPAs (Spotify, YT Music) that swap the
+          now-playing text without a full navigation. */
     const observer = new MutationObserver(debouncedCheck);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-    // Also watch page title changes (Spotify updates title on track change)
-    const titleObserver = new MutationObserver(debouncedCheck);
+    /* 2) Watch the <title> — most music sites update it on track change. */
     const titleEl = document.querySelector('title');
     if (titleEl) {
-      titleObserver.observe(titleEl, { childList: true, characterData: true });
+      new MutationObserver(debouncedCheck).observe(titleEl, { childList: true, characterData: true });
     }
 
-    // Fallback polling
-    setInterval(checkTrackChange, 4000);
+    /* 3) Hook the <video>/<audio> element directly. The most reliable signal
+          for a new track on YouTube / YouTube Music / SoundCloud is the
+          media's loadedmetadata / play / durationchange event. */
+    const hookMedia = () => {
+      const media = getMedia();
+      if (!media || media === mediaHooked) return;
+      mediaHooked = media;
+      ['loadedmetadata', 'durationchange', 'play'].forEach((evt) => {
+        media.addEventListener(evt, debouncedCheck, { passive: true });
+      });
+    };
+    hookMedia();
+    // Re-hook periodically in case the site replaces the media element.
+    setInterval(hookMedia, 3000);
+
+    /* 4) Watch the URL — YouTube changes ?v= when you click a new video. */
+    let lastUrl = location.href;
+    setInterval(() => {
+      if (location.href !== lastUrl) {
+        lastUrl = location.href;
+        debouncedCheck();
+      }
+    }, 1000);
+
+    /* 5) Safety-net polling for sites that don't fire any of the above. */
+    setInterval(checkTrackChange, 3000);
   }
 
   /* ══════════════════════════════════════
@@ -608,6 +676,7 @@
     const title = [track.artist, track.title].filter(Boolean).join(' — ') || 'Song found';
 
     state.active = true;
+    state.errorShown = false;
     state.lines = prepared;
     state.currentIndex = -1;
     state.currentMoment = null;
@@ -1440,6 +1509,7 @@
     cancelLoop();
     stopSpotifyPolling();
     state.active = false;
+    state.errorShown = false;
     state.currentIndex = -1;
     state.currentMoment = null;
     state.timingErrors = [];
