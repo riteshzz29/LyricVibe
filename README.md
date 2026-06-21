@@ -1,10 +1,19 @@
 # LyricVibe 🎵
 
-I was listening to music one day, reading along to lyrics on my phone, and it just felt... flat. Then I watched a Samay Raina YouTube special (Samay bhai love u) that had this really clean animated caption style at the end credits and thought — why don't lyrics ever feel like that? So I built this.
+I was listening to music one day, reading along to lyrics on my phone, and it just felt... flat. Then I watched a Samay Raina YouTube special that had this really clean animated caption style at the end credits and thought — why don't lyrics ever feel like that? So I built this.
+
+https://github.com/user-attachments/assets/dbc143e8-2381-4ff2-99a5-8f47dbd6085d
+
 
 LyricVibe is a Chrome extension that overlays perfectly synced, word-by-word animated lyrics directly on your YouTube Music, Spotify, and SoundCloud tabs. No setup. Just play a song and hit `Ctrl+Shift+L`.
 
-https://github.com/user-attachments/assets/dbc143e8-2381-4ff2-99a5-8f47dbd6085d
+**[Install from the Chrome Web Store →](https://chromewebstore.google.com/detail/lyricvibe-—-kinetic-lyric/iplhipppjgpeofmadbnkolnpigiachmn)**
+
+---
+
+## 🆕 Latest update (v0.4.0)
+
+Fixed lyrics getting stuck on the previous song when the next track auto-plays — this was the most annoying bug and it's gone now. Detection is also noticeably faster across all three platforms.
 
 ---
 
@@ -13,21 +22,21 @@ https://github.com/user-attachments/assets/dbc143e8-2381-4ff2-99a5-8f47dbd6085d
 - Detects whatever song is playing and fetches synced lyrics automatically
 - Animates them word-by-word, locked to the beat
 - Works on **YouTube Music**, **Spotify Web Player**, and **SoundCloud**
+- Automatically catches the next track when a song changes — no need to retrigger it
 - 13 visual themes — press `T` to switch between them while listening
 - Remembers your sync preference per song so you only have to nudge it once
 - See-through mode (`B`) so the music video stays visible behind the lyrics
 - Adjust text size with `+` / `-`
+- Built-in shortcuts panel — no need to memorize anything
 - 100% free, no account, no tracking, no backend server
 
 ---
 
-## 🚀 Install
+## Install
 
-One click, no developer mode needed.
+**One click:** [Chrome Web Store →](https://chromewebstore.google.com/detail/lyricvibe-—-kinetic-lyric/iplhipppjgpeofmadbnkolnpigiachmn)
 
-**[Install from the Chrome Web Store →](https://chromewebstore.google.com/detail/lyricvibe-—-kinetic-lyric/iplhipppjgpeofmadbnkolnpigiachmn)**
-
-manual install (30 sec):
+Or manually from source:
 
 1. Download the ZIP from the green **Code** button → **Download ZIP**
 2. Extract it somewhere on your computer
@@ -49,6 +58,8 @@ manual install (30 sec):
 | `B` | See-through mode |
 | `Esc` | Close it |
 
+(Also shown in-app via the help button — press it anytime to see this without leaving the tab.)
+
 ---
 
 ## Themes
@@ -67,7 +78,7 @@ Permissions used: `activeTab`, `scripting`, `storage` — nothing else.
 
 ## Works best on
 
-YouTube Music > Spotify > soundcloud (Spotify doesn't expose a proper audio element so timing is slightly trickier, but it works well)
+YouTube Music > SoundCloud > Spotify (Spotify doesn't expose a proper audio element so timing is slightly trickier, but it works well)
 
 ---
 
