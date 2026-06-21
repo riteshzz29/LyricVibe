@@ -21,9 +21,13 @@ https://github.com/user-attachments/assets/dbc143e8-2381-4ff2-99a5-8f47dbd6085d
 
 ---
 
-## Install (30 seconds)
+## 🚀 Install
 
-Not on the Chrome Web Store yet — manual install for now:
+One click, no developer mode needed.
+
+**[Install from the Chrome Web Store →](https://chromewebstore.google.com/detail/lyricvibe-—-kinetic-lyric/iplhipppjgpeofmadbnkolnpigiachmn)**
+
+manual install (30 sec):
 
 1. Download the ZIP from the green **Code** button → **Download ZIP**
 2. Extract it somewhere on your computer
@@ -63,7 +67,7 @@ Permissions used: `activeTab`, `scripting`, `storage` — nothing else.
 
 ## Works best on
 
-YouTube Music > SoundCloud > Spotify (Spotify doesn't expose a proper audio element so timing is slightly trickier, but it works well)
+YouTube Music > Spotify > soundcloud (Spotify doesn't expose a proper audio element so timing is slightly trickier, but it works well)
 
 ---
 
