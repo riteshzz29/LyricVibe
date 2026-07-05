@@ -325,6 +325,63 @@
   color: #ff3347;
 }
 
+/* ── Warning state (amber — API degraded but not dead) ── */
+.lvx-hud.lvx-warning .lvx-hud-label {
+  color: #ffb020;
+  animation: lvx-warning-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lvx-warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── API error screen with retry button ── */
+.lvx-not-available.lvx-api-error {
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.lvx-api-error-msg {
+  font-size: clamp(1.4rem, 3.5vw, 3rem);
+}
+
+.lvx-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border: 2px solid rgba(255, 176, 32, 0.6);
+  border-radius: 12px;
+  background: rgba(255, 176, 32, 0.12);
+  color: #ffb020;
+  font-family: var(--lvx-font-main, Impact, "Arial Black", sans-serif);
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+  animation: lvx-retry-in 500ms ease-out 400ms both;
+}
+
+.lvx-retry-btn:hover {
+  background: rgba(255, 176, 32, 0.25);
+  border-color: rgba(255, 176, 32, 0.85);
+  color: #ffc850;
+  transform: scale(1.05);
+}
+
+.lvx-retry-btn:active {
+  transform: scale(0.97);
+}
+
+@keyframes lvx-retry-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .lvx-stop {
   border: 1px solid rgba(255,255,255,0.22);
   border-radius: 7px;

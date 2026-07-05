@@ -22,7 +22,26 @@
 
   /* If overlay already exists, just show it */
   if (window.__lyricVibeOverlay && window.__lyricVibeOverlay.show) {
-    window.__lyricVibeOverlay.show();
+    /* Only reuse the old overlay if its extension context is still alive.
+       After an extension reload/update the old content script survives with a
+       DEAD chrome.runtime: it can't answer LV_GET_HINTS, so song detection
+       silently breaks until the page is refreshed. Detect that zombie and
+       replace it instead of returning early. */
+    const lvxOld = window.__lyricVibeOverlay;
+    var lvxOldAlive = false; // var: hoisted so it's visible after this block
+    try { lvxOldAlive = typeof lvxOld.ping === 'function' ? lvxOld.ping() : false; } catch (_) {}
+    if (!lvxOldAlive) {
+      try { if (typeof lvxOld.hide === 'function') lvxOld.hide(); } catch (_) {}
+      try { const lvxEl = document.getElementById('lvx-root'); if (lvxEl) lvxEl.remove(); } catch (_) {}
+      window.__lyricVibeOverlay = null;
+      // (zombie replaced — fall through to full re-initialization below)
+    }
+    if (lvxOldAlive) {
+      window.__lyricVibeOverlay.show();
+      return;
+    }
+  }
+  if (window.__lvxNeverTrue) { // no-op guard: absorbs a leftover legacy return statement
     return;
   }
 
@@ -178,6 +197,12 @@
   document.documentElement.appendChild(root);
 
   window.__lyricVibeOverlay = {
+    // Health check: returns false once this script's extension context dies
+    // (extension reloaded/updated), so the next injection knows to replace us.
+    ping() {
+      try { return Boolean(chrome && chrome.runtime && chrome.runtime.id); }
+      catch (_) { return false; }
+    },
     show,
     hide: teardown,
     hints: getPageHints
@@ -226,7 +251,18 @@
       stage.textContent = '';
       preview.textContent = '';
       progressFill.style.width = '0%';
+      state.errorShown = true; // Ensure observer stays active while status is shown
       setHud(message.text || 'Working...');
+    }
+
+    if (message.type === 'LV_STATUS_WARNING') {
+      cancelLoop();
+      clearRevealTimers();
+      stage.textContent = '';
+      preview.textContent = '';
+      progressFill.style.width = '0%';
+      state.errorShown = true; // Ensure observer stays active while status is shown
+      setHud(message.text || 'Service busy...', false, true, true);
     }
 
     if (message.type === 'LV_ERROR') {
@@ -250,6 +286,46 @@
       preview.textContent = '';
       root.classList.add('lvx-active');
       setHud(`${errorMsg}  ·  Will retry on next track`, true, true);
+    }
+
+    if (message.type === 'LV_API_ERROR') {
+      // API is down/degraded — show clear message with retry button
+      clearRevealTimers();
+      cancelLoop();
+      stopSpotifyPolling();
+      state.currentIndex = -1;
+      state.currentMoment = null;
+      state.errorShown = true;
+
+      show();
+      const errorMsg = message.text || 'Lyrics service is temporarily unavailable';
+      stage.innerHTML = '';
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'lvx-not-available lvx-api-error';
+      errorDiv.innerHTML = '';
+
+      const msgSpan = document.createElement('div');
+      msgSpan.className = 'lvx-api-error-msg';
+      msgSpan.textContent = errorMsg;
+      errorDiv.appendChild(msgSpan);
+
+      if (message.canRetry) {
+        const retryBtn = document.createElement('button');
+        retryBtn.className = 'lvx-retry-btn';
+        retryBtn.textContent = '↻ TRY AGAIN';
+        retryBtn.addEventListener('click', () => {
+          try { chrome.runtime?.sendMessage({ type: 'LV_RETRY' }).catch(() => {}); } catch (_) {}
+          stage.textContent = '';
+          setHud('Retrying...', false, false, true);
+        });
+        errorDiv.appendChild(retryBtn);
+      }
+
+      stage.appendChild(errorDiv);
+      progressFill.style.width = '0%';
+      preview.textContent = '';
+      root.classList.add('lvx-active');
+      setHud(`${errorMsg}`, true, true, true);
     }
 
     if (message.type === 'LV_TRACK') {
@@ -285,9 +361,10 @@
     if (host.includes('music.youtube.com')) {
       hints.track = textFrom('.title.ytmusic-player-bar') ||
         textFrom('ytmusic-player-bar .title') ||
-        textFrom('yt-formatted-string.title');
+        textFrom('ytmusic-player-bar yt-formatted-string.title') || '';
       hints.artist = textFrom('.byline.ytmusic-player-bar a') ||
-        textFrom('ytmusic-player-bar .byline a');
+        textFrom('ytmusic-player-bar .byline a') ||
+        textFrom('ytmusic-player-bar .subtitle a') || '';
       // Try to get album from YouTube Music
       hints.album = textFrom('ytmusic-player-bar .byline a:nth-child(3)') ||
         textFrom('ytmusic-player-bar .subtitle a[href*="browse/"]') || '';
@@ -1700,11 +1777,16 @@
     }
   }
 
-  function setHud(text, isError = false, sticky = false) {
+  function setHud(text, isError = false, sticky = false, isWarning = false) {
     show();
     hud.classList.toggle('lvx-error', isError);
+    hud.classList.toggle('lvx-warning', isWarning && !isError);
     hud.classList.remove('lvx-dim');
-    hudLabel.textContent = isError ? 'LYRICVIBE ERROR' : 'LYRICVIBE';
+    if (isWarning && !isError) {
+      hudLabel.textContent = 'LYRICVIBE WARNING';
+    } else {
+      hudLabel.textContent = isError ? 'LYRICVIBE ERROR' : 'LYRICVIBE';
+    }
     hudText.textContent = text;
     clearTimeout(state.hudTimer);
     if (!sticky) {
