@@ -15,6 +15,25 @@
   --lvx-bg-grid:       1;
 }
 
+/* ── FLOW: full-screen lyrics-learning teleprompter ──
+   Five lyric lines use the whole stage: two faintly behind, the
+   current line in the middle, and two faintly ahead. */
+#lvx-root[data-lvx-theme="flow"] {
+  --lvx-color-main:    #F2EDD7;
+  --lvx-color-accent:  #E52222;
+  --lvx-font-main:     "DM Sans", Arial, sans-serif;
+  --lvx-font-accent:   "DM Sans", Arial, sans-serif;
+  --lvx-text-case:     none;
+  --lvx-main-tracking: -0.025em;
+  --lvx-glow-main:     0 0 18px rgba(242,237,215,0.18), 0 4px 0 rgba(0,0,0,0.45);
+  --lvx-glow-accent:   0 0 14px rgba(242,237,215,0.16);
+  --lvx-bg-overlay:    radial-gradient(ellipse at center,
+                         rgba(242,237,215,0.035) 0%,
+                         rgba(0,0,0,0.80) 58%,
+                         rgba(0,0,0,0.94) 100%);
+  --lvx-bg-grid:       0;
+}
+
 /* ── HYPEBEAST: pure white, Bebas Neue, tight tracking ── */
 #lvx-root[data-lvx-theme="hype"] {
   --lvx-color-main:    #FFFFFF;
@@ -181,6 +200,24 @@
   --lvx-glow-accent:   0 0 18px rgba(65,105,225,0.5), 0 0 40px rgba(65,105,225,0.15);
   --lvx-bg-overlay:    linear-gradient(180deg, rgba(4,0,12,0.93), rgba(0,0,8,0.98));
   --lvx-bg-grid:       0;
+}
+
+/* ── PULSE: kinetic-typography motion theme ──
+   Inherits SAMAY's cream/red/Impact visual identity.
+   PULSE is a MOTION style, not a new look — all differentiation
+   comes from per-word CSS animations driven by JS heuristics. */
+#lvx-root[data-lvx-theme="pulse"] {
+  --lvx-color-main:    #F2EDD7;
+  --lvx-color-accent:  #E52222;
+  --lvx-font-main:     Impact, "Arial Black", serif;
+  --lvx-font-accent:   Impact, "Arial Black", sans-serif;
+  --lvx-text-case:     uppercase;
+  --lvx-main-tracking: 0;
+  --lvx-glow-main:     0 0 22px rgba(255,51,71,0.28), 0 3px 0 rgba(0,0,0,0.32);
+  --lvx-glow-accent:   0 0 20px rgba(255,51,71,0.22);
+  --lvx-bg-overlay:    linear-gradient(180deg, rgba(0,0,0,0.84), rgba(0,0,0,0.96)),
+                       linear-gradient(115deg, rgba(255,51,71,0.08), transparent 38%, rgba(245,240,219,0.035));
+  --lvx-bg-grid:       1;
 }
 
 /* ── ROOT ── */
@@ -432,6 +469,30 @@
 }
 
 /* ── Help button (? icon) ── */
+/* ── Auto Sync: reset one song's manual nudge and recalibrate ── */
+.lvx-quick-sync-btn {
+  border: 1px solid rgba(33,230,193,0.42);
+  border-radius: 5px;
+  background: rgba(33,230,193,0.08);
+  color: #21e6c1;
+  padding: 3px 7px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.12s;
+  white-space: nowrap;
+}
+.lvx-quick-sync-btn:hover {
+  background: rgba(33,230,193,0.18);
+  border-color: rgba(33,230,193,0.8);
+  color: #dffff7;
+}
+.lvx-quick-sync-btn:active {
+  transform: scale(0.96);
+}
+
 .lvx-help-btn {
   border: 1px solid rgba(255,255,255,0.18);
   border-radius: 50%;
@@ -602,6 +663,7 @@
 #lvx-root[data-lvx-theme="matrix"]  .lvx-theme-btn { color: #00FF41;  border-color: rgba(0,255,65,0.5); }
 #lvx-root[data-lvx-theme="vinyl"]   .lvx-theme-btn { color: #F5DEB3;  border-color: rgba(245,222,179,0.4); }
 #lvx-root[data-lvx-theme="cosmic"]  .lvx-theme-btn { color: #E0B0FF;  border-color: rgba(224,176,255,0.4); }
+#lvx-root[data-lvx-theme="flow"]    .lvx-theme-btn { color: #F2EDD7;  border-color: rgba(242,237,215,0.5); }
 
 /* ── MOMENT CONTAINER ── */
 .lvx-moment {
@@ -1723,6 +1785,296 @@
   .lvx-shortcuts-footer {
     padding: 8px 16px 14px;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FLOW THEME — BIG KARAOKE-STYLE LYRICS FOLLOWER
+   ══════════════════════════════════════════════════════════════════
+   Full-screen teleprompter built for actually LEARNING the lyrics.
+
+   Layout: five lines distributed across the full stage.
+     · -2/-1: previous context, progressively fainter
+     ·  0:    current lyric, clear in the middle with a subtle word glow
+     · +1/+2: upcoming context, progressively fainter
+
+   Words in the current line go through three states:
+     · upcoming  — soft cream, easy to read before it is sung
+     · active    — a restrained cream glow (right now)
+     · done      — solid cream, slightly dimmer than the active word
+
+   The active word uses a small focus animation rather than a coloured block.
+   All styles scoped to [data-lvx-theme="flow"].
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Hide standard moment + preview when FLOW is active */
+#lvx-root[data-lvx-theme="flow"] .lvx-moment,
+#lvx-root[data-lvx-theme="flow"] .lvx-preview {
+  display: none !important;
+}
+
+/* Teleprompter container — a seven-slot rail keeps five lines visible while
+   one lyric enters below and another exits above. */
+.lvx-flow-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  padding: clamp(4.75rem, 8vh, 7rem) clamp(1.25rem, 4vw, 5rem) clamp(3.5rem, 7vh, 6rem);
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* Every physical line moves between fixed reading positions. Changing its
+   data-flow-pos drives a smooth upward journey, rather than a text swap. */
+.lvx-flow-line {
+  --lvx-flow-base-size: 1rem;
+  --lvx-flow-fit-size: 999px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  text-align: center;
+  width: 100%;
+  max-width: min(94vw, 1800px);
+  font-size: min(var(--lvx-flow-base-size), var(--lvx-flow-fit-size));
+  min-height: 1.05em;
+  font-family: var(--lvx-font-main);
+  font-weight: 700;
+  text-transform: none;
+  color: var(--lvx-color-main);
+  line-height: 1.14;
+  letter-spacing: var(--lvx-main-tracking, 0);
+  text-shadow: 0 4px 22px rgba(0,0,0,0.85), 0 2px 0 rgba(0,0,0,0.5);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: none;
+  white-space: nowrap;
+  will-change: top, opacity, font-size, transform;
+  transition: top 620ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 620ms cubic-bezier(0.22, 1, 0.36, 1),
+              font-size 620ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+              filter 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.lvx-flow-container.lvx-flow-snap .lvx-flow-line {
+  transition: none !important;
+}
+
+/* Spotify-inspired five-line reader: the surrounding lyrics are genuinely
+   readable, while the current line is clear without becoming oversized. */
+.lvx-flow-line[data-flow-pos="-4"],
+.lvx-flow-line[data-flow-pos="-3"],
+.lvx-flow-line[data-flow-pos="3"] {
+  top: -8%;
+  --lvx-flow-base-size: clamp(1.35rem, 2.55vw, 3rem);
+  opacity: 0;
+  filter: none;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.lvx-flow-line[data-flow-pos="3"] { top: 108%; }
+
+.lvx-flow-line[data-flow-pos="-2"],
+.lvx-flow-line[data-flow-pos="2"] {
+  --lvx-flow-base-size: clamp(1.35rem, 2.55vw, 3rem);
+  opacity: 0.38;
+  filter: none;
+  transform: translate(-50%, -50%) scale(0.99);
+}
+
+.lvx-flow-line[data-flow-pos="-2"] { top: 18%; }
+.lvx-flow-line[data-flow-pos="2"]  { top: 82%; }
+
+.lvx-flow-line[data-flow-pos="-1"] {
+  top: 34%;
+  --lvx-flow-base-size: clamp(1.75rem, 3.45vw, 4.1rem);
+  opacity: 0.60;
+  transform: translate(-50%, -50%) scale(1);
+  filter: none;
+}
+
+.lvx-flow-line[data-flow-pos="0"] {
+  top: 50%;
+  --lvx-flow-base-size: clamp(2.55rem, 5.2vw, 6.2rem);
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  filter: none;
+  text-shadow: 0 5px 24px rgba(0,0,0,0.88), 0 0 20px rgba(242,237,215,0.10);
+}
+
+.lvx-flow-line[data-flow-pos="1"] {
+  top: 66%;
+  --lvx-flow-base-size: clamp(1.75rem, 3.45vw, 4.1rem);
+  opacity: 0.66;
+  transform: translate(-50%, -50%) scale(1);
+  filter: none;
+}
+
+/* When the current line is short (few words), the words need a bit
+   of breathing room so they don't feel cramped at hero size. */
+.lvx-flow-line[data-flow-pos="0"].lvx-flow-short {
+  letter-spacing: 0.04em;
+}
+
+/* ── Word states in the current line ── */
+.lvx-flow-word {
+  display: inline-block;
+  margin: 0 0.06em;
+  padding: 0;
+  transition: color 120ms ease-out,
+              -webkit-text-stroke 120ms ease-out,
+              text-shadow 180ms ease-out,
+              transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 220ms ease-out;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+/* Upcoming words stay visible for learning, without competing with the
+   current word. */
+.lvx-flow-word.lvx-flow-upcoming {
+  color: #F2EDD7;
+  -webkit-text-stroke: 0;
+  opacity: 0.76;
+  transform: scale(1);
+}
+
+/* Active: a small, clean glow. Deliberately no red background, badge, or
+   heavy bloom so it remains comfortable to read for a whole song. */
+.lvx-flow-word.lvx-flow-active {
+  color: #FFFDF2;
+  background: transparent;
+  -webkit-text-stroke: 0;
+  opacity: 1;
+  transform: scale(1.012);
+  text-shadow: 0 0 5px rgba(255,253,242,0.58), 0 0 14px rgba(242,237,215,0.24),
+               0 3px 12px rgba(0,0,0,0.62);
+  animation: lvx-flow-focus 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* A restrained focus shift replaces the previous slam animation. */
+@keyframes lvx-flow-focus {
+  0%   { transform: scale(0.985); opacity: 0.72; filter: brightness(0.94); }
+  65%  { transform: scale(1.022); opacity: 1; filter: brightness(1.04); }
+  100% { transform: scale(1.012); opacity: 1; filter: none; }
+}
+
+/* Done/revealed: solid cream fill with a soft glow so sung words
+   stay visually present (helps the reader scan back). */
+.lvx-flow-word.lvx-flow-done {
+  color: #F2EDD7;
+  -webkit-text-stroke: 0;
+  opacity: 0.72;
+  text-shadow: 0 0 8px rgba(242,237,215,0.13);
+}
+
+/* See-through (lite) mode support for FLOW */
+#lvx-root.lvx-lite[data-lvx-theme="flow"] .lvx-flow-line {
+  text-shadow: 0 3px 18px rgba(0,0,0,0.95), 0 0 36px rgba(0,0,0,0.85);
+}
+#lvx-root.lvx-lite[data-lvx-theme="flow"] .lvx-flow-line[data-flow-pos="0"] {
+  text-shadow: 0 4px 22px rgba(0,0,0,0.95), 0 0 50px rgba(0,0,0,0.85);
+}
+
+@media (max-width: 760px) {
+  .lvx-flow-container {
+    padding: 10vh 1rem 7vh;
+  }
+
+  .lvx-flow-line[data-flow-pos="-2"],
+  .lvx-flow-line[data-flow-pos="2"] {
+    --lvx-flow-base-size: clamp(0.95rem, 3.5vw, 1.45rem);
+  }
+
+  .lvx-flow-line[data-flow-pos="-1"],
+  .lvx-flow-line[data-flow-pos="1"] {
+    --lvx-flow-base-size: clamp(1.2rem, 4.9vw, 2rem);
+  }
+
+  .lvx-flow-line[data-flow-pos="0"] {
+    --lvx-flow-base-size: clamp(2.15rem, 8.4vw, 4.1rem);
+  }
+}
+
+@media (max-height: 680px) {
+  .lvx-flow-container {
+    padding-top: 4rem;
+    padding-bottom: 3rem;
+  }
+
+  .lvx-flow-line[data-flow-pos="0"] {
+    --lvx-flow-base-size: clamp(2.2rem, 4.6vw, 4.7rem);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PULSE THEME — KINETIC-TYPOGRAPHY ANIMATIONS
+   ══════════════════════════════════════════════════════════════════
+   These keyframes and classes are ONLY active under
+   [data-lvx-theme="pulse"]. They provide four heuristic-driven
+   effects applied per-word by JS:
+
+   1. BREATHE  — slow 1.0→1.05→1.0 scale loop for sustained words
+   2. PUNCH    — fast 1.35→0.97→1.0 overshoot pop for emphasis
+   3. STRETCH  — letter-spacing expansion for elongated words
+   4. DROP     — bigger entrance (scale 1.5→1.0) for post-gap moments
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Breathe: gentle looping pulse for sustained/held words ── */
+@keyframes lvx-pulse-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.05); }
+}
+
+/* ── Punch: fast overshoot pop for emphasis words ── */
+@keyframes lvx-pulse-punch {
+  0%   { transform: scale(1);    }
+  30%  { transform: scale(1.35); }
+  70%  { transform: scale(0.97); }
+  100% { transform: scale(1);    }
+}
+
+/* ── Stretch: letter-spacing expansion for elongated words ── */
+@keyframes lvx-pulse-stretch {
+  0%   { letter-spacing: 0;      transform: scaleX(1);    }
+  40%  { letter-spacing: 0.15em; transform: scaleX(1.04); }
+  100% { letter-spacing: 0.08em; transform: scaleX(1.02); }
+}
+
+/* ── Drop: bigger entrance for post-gap "drop" moments ── */
+@keyframes lvx-pulse-drop {
+  0%   { opacity: 0; transform: scale(1.5);  filter: blur(3px); }
+  50%  { opacity: 1; transform: scale(0.96); filter: none;      }
+  100% { opacity: 1; transform: scale(1);    filter: none;      }
+}
+
+/* ── Word decoration classes (scoped to PULSE theme only) ── */
+
+#lvx-root[data-lvx-theme="pulse"] .lvx-pulse-sustain.lvx-in {
+  animation: lvx-pulse-breathe 1.2s ease-in-out infinite;
+  will-change: transform;
+}
+
+#lvx-root[data-lvx-theme="pulse"] .lvx-pulse-emphasis.lvx-in {
+  animation: lvx-pulse-punch 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform;
+}
+
+#lvx-root[data-lvx-theme="pulse"] .lvx-pulse-elongated.lvx-in {
+  animation: lvx-pulse-stretch var(--lvx-pulse-dur, 600ms) ease-out both;
+  will-change: letter-spacing, transform;
+}
+
+/* Drop applies to the entire moment container, not individual words */
+#lvx-root[data-lvx-theme="pulse"] .lvx-moment.lvx-pulse-drop {
+  animation: lvx-pulse-drop 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* When emphasis + sustain overlap, punch first then breathe */
+#lvx-root[data-lvx-theme="pulse"] .lvx-pulse-emphasis.lvx-pulse-sustain.lvx-in {
+  animation: lvx-pulse-punch 180ms cubic-bezier(0.22, 1, 0.36, 1) both,
+             lvx-pulse-breathe 1.2s ease-in-out 200ms infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

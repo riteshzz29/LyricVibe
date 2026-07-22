@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LyricVibe \u2014 Kinetic Lyrics Overlay",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Overlay synced kinetic lyrics on any music tab \u2014 YouTube Music, Spotify, SoundCloud, and more.",
   "minimum_chrome_version": "116",
   "permissions": [

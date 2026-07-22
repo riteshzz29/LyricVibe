@@ -4,9 +4,9 @@
      ══════════════════════════════════════ */
   const DEFAULT_SYNC_OFFSET_MS = -80;
   const SYNC_NUDGE_MS = 80;
-  const THEMES = ['samay', 'hype', 'soft', 'neon', 'clean', 'retro', 'glass', 'fire', 'elegant', 'aurora', 'matrix', 'vinyl', 'cosmic'];
+  const THEMES = ['samay', 'flow', 'fire', 'neon', 'glass', 'hype', 'soft', 'clean', 'retro', 'elegant', 'aurora', 'matrix', 'vinyl', 'cosmic'];
   const THEME_LABELS = {
-    samay: 'SAMAY', hype: 'HYPE', soft: 'SOFT', neon: 'NEON',
+    flow: 'FLOW', samay: 'SAMAY', hype: 'HYPE', soft: 'SOFT', neon: 'NEON',
     clean: 'CLEAN', retro: 'RETRO', glass: 'GLASS', fire: 'FIRE', elegant: 'ELEGANT',
     aurora: 'AURORA', matrix: 'MATRIX', vinyl: 'VINYL', cosmic: 'COSMIC'
   };
@@ -71,6 +71,8 @@
     timingErrors: [],        // recent render timing errors vs LRC timestamp
     autoCalibrated: false,   // true after first calibration pass
     baseOffsetMs: DEFAULT_SYNC_OFFSET_MS, // original computed offset
+    detectedSyncOffsetMs: DEFAULT_SYNC_OFFSET_MS, // genre/tempo-aware baseline for Auto Sync
+    syncPreferenceVersion: 0, // prevents stale stored offsets from overriding an Auto Sync reset
     // Spotify-specific: polling for time from DOM
     spotifyPollInterval: 0,
     spotifyCurrentTimeMs: 0,
@@ -135,13 +137,19 @@
   syncLater.title = 'Lyrics later (])';
   syncLater.addEventListener('click', () => nudgeSync(SYNC_NUDGE_MS));
 
+  const quickSyncButton = document.createElement('button');
+  quickSyncButton.className = 'lvx-quick-sync-btn';
+  quickSyncButton.textContent = '⟳ SYNC';
+  quickSyncButton.title = 'Auto Sync: reset manual timing and recalibrate this song';
+  quickSyncButton.addEventListener('click', () => quickSyncLyrics());
+
   const helpButton = document.createElement('button');
   helpButton.className = 'lvx-help-btn';
   helpButton.textContent = '?';
   helpButton.title = 'Keyboard shortcuts (? or H)';
   helpButton.addEventListener('click', () => toggleShortcutsPanel());
 
-  hud.append(hudLabel, hudText, syncEarlier, syncLater, themeButton, helpButton, stopButton);
+  hud.append(hudLabel, hudText, syncEarlier, syncLater, quickSyncButton, themeButton, helpButton, stopButton);
 
   /* Next-line preview (bottom center) */
   const preview = document.createElement('div');
@@ -171,6 +179,10 @@
     '  <div class="lvx-shortcut-row">',
     '    <span class="lvx-key-badge">[</span><span class="lvx-shortcut-sep">/</span><span class="lvx-key-badge">]</span>',
     '    <span class="lvx-shortcut-desc">Nudge sync earlier / later</span>',
+    '  </div>',
+    '  <div class="lvx-shortcut-row">',
+    '    <span class="lvx-key-badge">⟳ SYNC</span>',
+    '    <span class="lvx-shortcut-desc">Reset manual sync and auto-calibrate this song</span>',
     '  </div>',
     '  <div class="lvx-shortcut-row">',
     '    <span class="lvx-key-badge">+</span><span class="lvx-shortcut-sep">/</span><span class="lvx-key-badge">−</span>',
@@ -340,6 +352,7 @@
   document.addEventListener('keydown', handleKeys, true);
   window.addEventListener('resize', () => {
     if (state.currentMoment) fitMoment(state.currentMoment);
+    if (state.theme === 'flow') flowFitAllSlots();
   });
 
   /* ══════════════════════════════════════
@@ -896,6 +909,9 @@
     state.trackDurationMs = Number(track.durationMs || 0) ||
       (payload.hints && payload.hints.duration ? payload.hints.duration * 1000 : 0);
     state.offsetWasRestored = false;
+    state.syncPreferenceVersion += 1;
+    state._flowLastIndex = -999; // reset FLOW teleprompter for new song
+    if (state.theme === 'flow') flowInit(); // rebuild FLOW DOM for new lyrics
     preview.textContent = '';
     progressFill.style.width = '0%';
 
@@ -921,6 +937,7 @@
     }
 
     state.baseOffsetMs = state.syncOffsetMs;
+    state.detectedSyncOffsetMs = state.syncOffsetMs;
     state.timingErrors = [];
     state.autoCalibrated = false;
     state.spotifyAutoCalibSamples = [];
@@ -960,9 +977,10 @@
        before, restore their preferred offset (overrides the adaptive guess). */
     if (state.trackKey) {
       try {
+        const preferenceVersion = state.syncPreferenceVersion;
         chrome.storage.local.get(`lvxOffset:${state.trackKey}`, (result) => {
           const saved = result && result[`lvxOffset:${state.trackKey}`];
-          if (Number.isFinite(saved) && state.active && state.trackKey) {
+          if (Number.isFinite(saved) && state.active && state.trackKey && state.syncPreferenceVersion === preferenceVersion) {
             state.syncOffsetMs = saved;
             state.baseOffsetMs = saved;
             state.autoCalibrated = true; // trust the user's saved offset
@@ -1252,6 +1270,16 @@
         progressFill.style.width = `${pct.toFixed(2)}%`;
       }
 
+      /* ── FLOW THEME: separate render path (teleprompter, runs every frame) ── */
+      if (state.theme === 'flow') {
+        if (nextIndex !== state.currentIndex) {
+          state.currentIndex = nextIndex;
+        }
+        flowRender(nextIndex, lyricClockMs);
+        state.rafId = requestAnimationFrame(tick);
+        return;
+      }
+
       if (nextIndex !== state.currentIndex) {
         // SPOTIFY AUTO-CALIBRATION: observe timing errors on the first 12 line transitions
         // and adjust offset so lyrics land closer to the beat
@@ -1450,6 +1478,12 @@
     stage.appendChild(moment);
     fitMoment(moment);
     state.currentMoment = moment;
+
+    /* PULSE: apply "drop" class to the moment if this line follows a big gap */
+    if (state.theme === 'pulse') {
+      pulseApplyDrop(moment, line, index);
+    }
+
     revealWords(revealQueue, line);
   }
 
@@ -1501,8 +1535,14 @@
 
     // First word at 0ms — appears exactly when line triggers (at LRC timestamp)
     // Subsequent words cascade from there
+    const isPulse = state.theme === 'pulse';
+    const wordDurMs = isPulse ? (duration / Math.max(1, wordCount)) : 0;
+    const isPunchLine = isPulse && (line.role === 'punch' || wordCount <= 3);
     spans.forEach((span, index) => {
-      state.revealTimers.push(setTimeout(() => span.classList.add('lvx-in'), index * step));
+      state.revealTimers.push(setTimeout(() => {
+        span.classList.add('lvx-in');
+        if (isPulse) pulseDecorateWord(span, wordDurMs, isPunchLine);
+      }, index * step));
     });
   }
 
@@ -1697,6 +1737,7 @@
     state.timingErrors = [];                 // clear calibration history
     state.autoCalibrated = true;             // stop auto-calibration fighting the user
     state.offsetWasRestored = true;
+    state.syncPreferenceVersion += 1;
     setHud(`Sync offset ${formatOffset(state.syncOffsetMs)}  ([ earlier / ] later) · saved for this song`);
     state.currentIndex = -999;
 
@@ -1706,6 +1747,43 @@
         chrome.storage.local.set({ [`lvxOffset:${state.trackKey}`]: state.syncOffsetMs });
       } catch (_) {}
     }
+  }
+
+  /**
+   * Automatic timing recovery for one song. It removes only that song's
+   * manual nudge, reapplies the pace-aware baseline, and enables the existing
+   * live calibration path to fine-tune later lyric transitions.
+   */
+  function quickSyncLyrics() {
+    if (!state.active || !state.lines.length) {
+      setHud('Auto Sync needs active lyrics first', true, false);
+      return;
+    }
+
+    const tempoOffset = Number.isFinite(state.detectedSyncOffsetMs)
+      ? state.detectedSyncOffsetMs
+      : computeAdaptiveSyncOffset(state.lines);
+
+    state.syncPreferenceVersion += 1;
+    state.syncOffsetMs = tempoOffset;
+    state.baseOffsetMs = tempoOffset;
+    state.timingErrors = [];
+    state.spotifyAutoCalibSamples = [];
+    state.mediaDriftSamples = [];
+    state.autoCalibrated = false;
+    state.offsetWasRestored = false;
+    state.currentIndex = -999;
+    clearMoment();
+
+    if (state.theme === 'flow') {
+      state._flowLastIndex = -999;
+    }
+
+    if (state.trackKey) {
+      try { chrome.storage.local.remove(`lvxOffset:${state.trackKey}`); } catch (_) {}
+    }
+
+    setHud(`Auto Sync reset · pace-aware offset ${formatOffset(tempoOffset)} · recalibrating`);
   }
 
   function trackStorageKey(track) {
@@ -1722,11 +1800,412 @@
     setTimeout(() => stage.classList.remove('lvx-hit'), 300);
   }
 
+
+  /* ══════════════════════════════════════
+     FLOW THEME — TELEPROMPTER LYRICS FOLLOWER
+     ══════════════════════════════════════
+     Renders a smooth scrolling teleprompter with per-word
+     highlighting. Designed for learning/following along.
+
+     Line stack (vertically centered):
+       line -2/-1: readable previous context
+       current:    focus line in the middle
+       line +1/+2: readable upcoming context
+
+     Word states in current line:
+       upcoming  → soft cream text
+       active    → softly glowing cream text
+       done      → slightly dimmer cream text
+
+     Data: reuses state.lines[] from prepareLines().
+     Timing: reuses the same step formula from revealWords().
+     ══════════════════════════════════════ */
+
+  /**
+   * Initialize FLOW DOM: create the 5-line container inside stage.
+   * Called when switching to flow or when lyrics load while flow is active.
+   */
+  function flowInit() {
+    flowTeardown(); // clean up any previous instance
+    clearMoment();  // remove any existing kinetic moment
+
+    const container = document.createElement('div');
+    container.className = 'lvx-flow-container';
+
+    // Seven slots buffer the visible five. The hidden top/bottom slots let
+    // each lyric physically travel up the screen instead of being replaced.
+    for (let i = -3; i <= 3; i++) {
+      const lineEl = document.createElement('div');
+      lineEl.className = 'lvx-flow-line';
+      lineEl.dataset.flowPos = String(i);
+      container.appendChild(lineEl);
+    }
+
+    stage.appendChild(container);
+    state._flowContainer = container;
+    state._flowSlots = Array.from(container.querySelectorAll('.lvx-flow-line'));
+    state._flowTransitioning = false;
+    state._flowLastIndex = -999; // force rebuild on first render
+  }
+
+  /**
+   * Tear down FLOW DOM. Safe to call even if flow wasn't initialized.
+   */
+  function flowTeardown() {
+    if (state._flowRecycleTimer) {
+      clearTimeout(state._flowRecycleTimer);
+      state._flowRecycleTimer = 0;
+    }
+    if (state._flowContainer) {
+      state._flowContainer.remove();
+      state._flowContainer = null;
+    }
+    state._flowSlots = null;
+    state._flowTransitioning = false;
+    state._flowLastIndex = -999;
+  }
+
+  const FLOW_SLOT_OFFSETS = [-3, -2, -1, 0, 1, 2, 3];
+  const FLOW_SCROLL_MS = 620;
+
+  /**
+   * Keep a Flow lyric on one clean line. Short lyrics use the larger visual
+   * scale; only unusually long lines are reduced enough to stay in the frame.
+   */
+  function flowFitLine(lineEl, text, position) {
+    if (!lineEl || !text) {
+      lineEl?.style.removeProperty('--lvx-flow-fit-size');
+      return;
+    }
+
+    const viewportWidth = Math.max(320, window.innerWidth || 1280);
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const compact = viewportWidth <= 760;
+    const distance = Math.abs(position);
+    let baseSize;
+    let minSize;
+
+    if (position === 0) {
+      baseSize = compact
+        ? clamp(viewportWidth * 0.084, 2.15 * rem, 4.1 * rem)
+        : clamp(viewportWidth * 0.052, 2.55 * rem, 6.2 * rem);
+      minSize = compact ? 1.7 * rem : 1.35 * rem;
+    } else if (distance === 1) {
+      baseSize = compact
+        ? clamp(viewportWidth * 0.049, 1.2 * rem, 2 * rem)
+        : clamp(viewportWidth * 0.0345, 1.75 * rem, 4.1 * rem);
+      minSize = compact ? 0.9 * rem : 1.05 * rem;
+    } else {
+      baseSize = compact
+        ? clamp(viewportWidth * 0.035, 0.95 * rem, 1.45 * rem)
+        : clamp(viewportWidth * 0.0255, 1.35 * rem, 3 * rem);
+      minSize = compact ? 0.72 * rem : 0.85 * rem;
+    }
+
+    const canvas = state._flowMeasureCanvas || (state._flowMeasureCanvas = document.createElement('canvas'));
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    context.font = `700 ${baseSize}px "DM Sans", Arial, sans-serif`;
+    const wordsInLine = text.trim().split(/\s+/).filter(Boolean).length;
+    const currentWordSpacing = position === 0 ? Math.max(0, wordsInLine - 1) * baseSize * 0.12 : 0;
+    const measuredWidth = context.measureText(text).width + currentWordSpacing + 12;
+    const availableWidth = Math.min(viewportWidth * 0.90, 1720);
+    const fittedSize = clamp(baseSize * Math.min(1, availableWidth / Math.max(measuredWidth, 1)), minSize, baseSize);
+
+    lineEl.style.setProperty('--lvx-flow-fit-size', `${Math.floor(fittedSize)}px`);
+  }
+
+  function flowFitAllSlots() {
+    (state._flowSlots || []).forEach((lineEl) => {
+      const lineIndex = Number(lineEl.dataset.flowLineIndex);
+      const line = state.lines[lineIndex];
+      flowFitLine(lineEl, line ? line.text : '', Number(lineEl.dataset.flowPos));
+    });
+  }
+
+  /**
+   * Fill one physical slot with a lyric and assign its vertical position.
+   * The element is retained between lines so CSS can animate it smoothly.
+   */
+  function flowSetSlot(lineEl, lineIndex, position) {
+    if (!lineEl) return;
+
+    lineEl.dataset.flowPos = String(position);
+    lineEl.dataset.flowLineIndex = String(lineIndex);
+
+    const line = lineIndex >= 0 && lineIndex < state.lines.length
+      ? state.lines[lineIndex]
+      : null;
+
+    if (!line) {
+      lineEl.textContent = '';
+      lineEl.style.visibility = 'hidden';
+      lineEl.style.removeProperty('--lvx-flow-fit-size');
+      return;
+    }
+
+    lineEl.style.visibility = 'visible';
+    if (position === 0) {
+      flowBuildWordSpans(lineEl, line.text);
+    } else {
+      lineEl.textContent = line.text;
+    }
+    flowFitLine(lineEl, line.text, position);
+  }
+
+  /** Place all slots without animation, used for first render and seeking. */
+  function flowSetStatic(activeIndex) {
+    const container = state._flowContainer;
+    const slots = state._flowSlots || [];
+    if (!container || !slots.length) return;
+
+    if (state._flowRecycleTimer) {
+      clearTimeout(state._flowRecycleTimer);
+      state._flowRecycleTimer = 0;
+    }
+
+    container.classList.add('lvx-flow-snap');
+    slots.forEach((lineEl, slotIndex) => {
+      const offset = FLOW_SLOT_OFFSETS[slotIndex];
+      flowSetSlot(lineEl, activeIndex + offset, offset);
+    });
+    void container.offsetWidth; // commit the static positions before animating later
+    container.classList.remove('lvx-flow-snap');
+    state._flowTransitioning = false;
+  }
+
+  /**
+   * Advance every physical slot one position upward. The future buffer enters
+   * through the bottom and the exited top slot is recycled after it is hidden.
+   */
+  function flowAdvance(previousIndex, nextIndex) {
+    const container = state._flowContainer;
+    const slots = state._flowSlots || [];
+    if (!container || !slots.length) return;
+
+    const outgoing = slots.find((lineEl) => Number(lineEl.dataset.flowPos) === -3);
+    if (!outgoing) {
+      flowSetStatic(nextIndex);
+      return;
+    }
+
+    slots.forEach((lineEl) => {
+      const oldPosition = Number(lineEl.dataset.flowPos);
+      const lineIndex = Number(lineEl.dataset.flowLineIndex);
+      flowSetSlot(lineEl, lineIndex, oldPosition - 1);
+    });
+
+    state._flowTransitioning = true;
+    state._flowRecycleTimer = setTimeout(() => {
+      if (!state._flowContainer || state._flowLastIndex !== nextIndex) return;
+      // Teleport the departed line back below the stage while it is fully
+      // transparent, so the next upward movement always begins cleanly.
+      container.classList.add('lvx-flow-snap');
+      flowSetSlot(outgoing, nextIndex + 3, 3);
+      void outgoing.offsetWidth;
+      container.classList.remove('lvx-flow-snap');
+      state._flowTransitioning = false;
+      state._flowRecycleTimer = 0;
+    }, FLOW_SCROLL_MS);
+  }
+
+  /**
+   * Compute which word is active using the same step formula as revealWords.
+   * @param {Object} line - prepared line object with .text, .duration
+   * @param {number} clockMs - current lyric clock time
+   * @returns {number} word index (0-based), or -1 if before line start
+   */
+  function flowWordIndex(line, clockMs) {
+    if (!line) return -1;
+    const elapsed = clockMs - line.time;
+    if (elapsed < 0) return -1;
+
+    const lineWords = line.text.split(/\s+/).filter(Boolean);
+    const wordCount = lineWords.length;
+    if (wordCount <= 0) return -1;
+    if (wordCount === 1) return 0;
+
+    const duration = line.duration || 3000;
+    const wordsPerSec = wordCount / (duration / 1000);
+
+    let step;
+    if (wordCount <= 2) {
+      step = 55;
+    } else if (wordsPerSec > 4) {
+      step = clamp(duration * 0.45 / (wordCount - 1), 25, 70);
+    } else if (wordsPerSec > 2) {
+      step = clamp(duration * 0.50 / (wordCount - 1), 55, 160);
+    } else {
+      step = clamp(duration * 0.55 / (wordCount - 1), 90, 260);
+    }
+
+    return clamp(Math.floor(elapsed / step), 0, wordCount - 1);
+  }
+
+  /**
+   * Main FLOW render function. Called every RAF frame when theme === 'flow'.
+   * @param {number} activeIndex - current line index from findActiveIndex
+   * @param {number} clockMs - lyric clock time (ms)
+   */
+  function flowRender(activeIndex, clockMs) {
+    // Lazy init: create container if it doesn't exist yet
+    if (!state._flowContainer) {
+      if (!state.lines.length) return;
+      flowInit();
+    }
+
+    const lines = state.lines;
+    const previousIndex = state._flowLastIndex;
+
+    // Move each physical slot upward for a normal next-line transition.
+    // Seeks, backwards jumps, and very fast changes settle cleanly in place.
+    if (activeIndex !== state._flowLastIndex) {
+      state._flowLastIndex = activeIndex;
+      const isSequential = previousIndex >= 0 && activeIndex === previousIndex + 1;
+      if (isSequential && !state._flowTransitioning) {
+        flowAdvance(previousIndex, activeIndex);
+      } else {
+        flowSetStatic(activeIndex);
+      }
+    }
+
+    // ── Per-frame: update word highlighting in the centered physical slot ──
+    const currentLineEl = state._flowContainer.querySelector('.lvx-flow-line[data-flow-pos="0"]');
+    if (!currentLineEl || activeIndex < 0 || activeIndex >= lines.length) return;
+
+    const currentLine = lines[activeIndex];
+    const wordIdx = flowWordIndex(currentLine, clockMs);
+    const wordSpans = currentLineEl.querySelectorAll('.lvx-flow-word');
+
+    wordSpans.forEach((span, i) => {
+      span.classList.remove('lvx-flow-upcoming', 'lvx-flow-active', 'lvx-flow-done');
+      if (i < wordIdx) {
+        span.classList.add('lvx-flow-done');
+      } else if (i === wordIdx) {
+        span.classList.add('lvx-flow-active');
+      } else {
+        span.classList.add('lvx-flow-upcoming');
+      }
+    });
+  }
+
+  /**
+   * Build word <span> elements inside a line element for per-word highlighting.
+   * @param {HTMLElement} lineEl - the .lvx-flow-line container
+   * @param {string} text - raw line text
+   */
+  function flowBuildWordSpans(lineEl, text) {
+    lineEl.textContent = ''; // clear
+    const words = text.split(/\s+/).filter(Boolean);
+    words.forEach((word, i) => {
+      const span = document.createElement('span');
+      span.className = 'lvx-flow-word lvx-flow-upcoming';
+      span.textContent = word;
+      lineEl.appendChild(span);
+      if (i < words.length - 1) {
+        lineEl.appendChild(document.createTextNode(' '));
+      }
+    });
+  }
+
+  /* ══════════════════════════════════════
+     PULSE THEME — HEURISTIC KINETIC TYPOGRAPHY
+     ══════════════════════════════════════
+     Detects text patterns to apply kinetic-typography CSS classes.
+     Only called when state.theme === 'pulse'. All visual effects
+     are CSS-driven (see content.css PULSE section). JS only
+     calculates which classes to apply per word/moment.
+
+     Heuristics (operate on the UPPERCASED text in each span):
+     1. ELONGATED — 3+ repeated trailing chars (e.g. "YEAHHHHH")
+        → .lvx-pulse-elongated with --lvx-pulse-dur set to word duration
+     2. EMPHASIS  — word is ALL-CAPS with ≥2 unique letters, or ends with "!"
+        → .lvx-pulse-emphasis (fast punch-in pop)
+        Note: since addTextLayer uppercases ALL words, we detect emphasis
+        via line role ('punch') or word ending in '!' instead.
+     3. SUSTAIN   — word displayed for >800ms (slow line, few words)
+        → .lvx-pulse-sustain (breathing scale loop)
+     4. DROP      — gap before this line is >2× the song's average gap
+        → .lvx-pulse-drop on the moment (bigger entrance)
+     ══════════════════════════════════════ */
+
+  /** Regex: word ending with 3+ of the same character (e.g. YEAHHHHH, OHHH, NOOO) */
+  const PULSE_ELONGATED_RE = /(.)(\1{2,})$/;
+
+  /**
+   * Decorate a single word span with PULSE CSS classes.
+   * Called inside the revealWords setTimeout, after lvx-in is added.
+   * @param {HTMLElement} span - the .lvx-word span
+   * @param {number} wordDurMs - estimated ms this word is displayed
+   */
+  function pulseDecorateWord(span, wordDurMs, isPunchLine) {
+    const text = span.textContent || '';
+
+    // 1. Elongated word detection (e.g. YEAHHHHH, OHHH, NOOO)
+    if (PULSE_ELONGATED_RE.test(text)) {
+      span.classList.add('lvx-pulse-elongated');
+      // Set animation duration to match how long this word is displayed
+      span.style.setProperty('--lvx-pulse-dur', `${clamp(wordDurMs, 300, 3000)}ms`);
+    }
+
+    // 2. Emphasis: words ending with '!' get a punch-in pop
+    //    (ALL-CAPS detection is unreliable since addTextLayer uppercases everything,
+    //     so we rely on '!' suffix and short word length as emphasis signals)
+    if (isPunchLine || text.endsWith('!') || (text.length <= 3 && text.length >= 1 && /^[A-Z]+$/.test(text))) {
+      span.classList.add('lvx-pulse-emphasis');
+    }
+
+    // 3. Sustain: word displayed for a long time → breathing pulse
+    if (wordDurMs > 800) {
+      span.classList.add('lvx-pulse-sustain');
+    }
+  }
+
+  /**
+   * Apply "drop" class to a moment if this line follows a gap
+   * significantly longer than the song's average inter-line gap.
+   * This simulates a "drop" moment after an instrumental break.
+   * @param {HTMLElement} moment - the .lvx-moment div
+   * @param {Object} line - the prepared line object
+   * @param {number} index - line index in state.lines
+   */
+  function pulseApplyDrop(moment, line, index) {
+    if (index <= 0) return; // first line can't have a preceding gap
+
+    const lines = state.lines;
+    const prevLine = lines[index - 1];
+    if (!prevLine) return;
+
+    // Compute the gap between previous line's end and this line's start
+    const gapBefore = line.time - prevLine.nextTime;
+    if (gapBefore <= 0) return; // lines overlap or are contiguous
+
+    // Compute average gap across the song (cached on first call per song)
+    if (!state._pulseAvgGap) {
+      let totalGap = 0;
+      let gapCount = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const g = lines[i].time - lines[i - 1].nextTime;
+        if (g > 0) { totalGap += g; gapCount++; }
+      }
+      state._pulseAvgGap = gapCount > 0 ? totalGap / gapCount : 2000;
+    }
+
+    // If gap before this line is >2× average, it's a "drop" moment
+    if (gapBefore > state._pulseAvgGap * 2 && gapBefore > 1500) {
+      moment.classList.add('lvx-pulse-drop');
+    }
+  }
+
   /* ══════════════════════════════════════
      THEME MANAGEMENT
      ══════════════════════════════════════ */
   function applyTheme(name) {
+    const wasFlow = state.theme === 'flow';
     state.theme = name;
+    if (wasFlow && name !== 'flow') flowTeardown();
+    if (name === 'flow' && state.active && state.lines.length) flowInit();
     if (name === 'samay') {
       root.removeAttribute('data-lvx-theme');
     } else {
@@ -1749,6 +2228,7 @@
      TEARDOWN / SHOW
      ══════════════════════════════════════ */
   function teardown() {
+    flowTeardown();
     clearRevealTimers();
     cancelLoop();
     stopSpotifyPolling();
